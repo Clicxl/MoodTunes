@@ -1,7 +1,7 @@
-# detectionModule.py
 import cv2
 from fer import FER
 from time import sleep
+import time
 
 def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=False):
     detector = FER(mtcnn=use_mtcnn)
@@ -9,6 +9,11 @@ def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=Fal
     if not cap.isOpened():
         logger.critical("Error: Cannot open camera.")
         return
+
+    stable_emotion = "Neutral"
+    last_emotion = stable_emotion
+    last_update_time = time.time()
+    stability_threshold = 1.5  # seconds to wait before updating emotion
 
     while True:
         ret, frame = cap.read()
@@ -18,27 +23,33 @@ def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=Fal
 
         frame = cv2.flip(frame, 1)
         results = detector.detect_emotions(frame)
+        current_time = time.time()
+
         if results:
             emotions = results[0]['emotions']
-            top_emotion = max(emotions, key=emotions.get)
-            current_emotion = top_emotion.capitalize()
+            top_emotion = max(emotions, key=emotions.get).capitalize()
+        else:
+            top_emotion = "No Face"
+
+        # Always update the frame in shared data for smooth video feed
+        shared_data['frame'] = frame
+
+        # Update emotion only if stable for threshold duration
+        if top_emotion == stable_emotion:
+            last_update_time = current_time  # reset timer on stability
+        else:
+            if (current_time - last_update_time) > stability_threshold:
+                stable_emotion = top_emotion
+                last_update_time = current_time
+
+        # Update shared emotion after stability check
+        shared_data['emotion'] = stable_emotion
+
+        # Optionally draw bounding box and label on the frame
+        if results:
             (x, y, w, h) = results[0]['box']
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(
-                frame,
-                f"{top_emotion}: {emotions[top_emotion]:.2f}",
-                (x, y - 10),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.9,
-                (36, 255, 12),
-                2,
-            )
-        else:
-            current_emotion = "No Face"
-
-        shared_data['frame'] = frame
-        shared_data['emotion'] = current_emotion
-
-        sleep(0.03)
+            
+        sleep(0.024)  # keep frame grab roughly 24 fps
 
     cap.release()
