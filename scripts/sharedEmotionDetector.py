@@ -6,8 +6,8 @@ class SharedEmotionDetector:
 
     @property
     def frame(self):
-        return self.shared_data.get('frame', None)
+        return self.shared_data.get("frame", None)
 
     @property
     def current_emotion(self):
-        return self.shared_data.get('emotion', "Neutral")
+        return self.shared_data.get("emotion", "Neutral")

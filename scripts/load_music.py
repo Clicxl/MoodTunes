@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def load_song_to_dict(db_path) -> dict:
     """
     Loads the entire emotion_songs table from SQLite into a list of dictionaries.
@@ -20,11 +21,10 @@ def load_song_to_dict(db_path) -> dict:
     # Convert sqlite3.Row objects to dicts
     data: dict = {}
     for row in rows:
-        _ = list(row) # [1, 'happy', 'Happy - Pharrell Williams', 'https://www.youtube.com/watch?v=ZbZSe6N_BXs', "Because I'm happy Clap along if you feel like happiness is the truth"]
-        data[_[1]] = {"name":_[2],"url":_[3],"desc":_[4]}
+        _ = list(
+            row
+        )  # [1, 'happy', 'Happy - Pharrell Williams', 'https://www.youtube.com/watch?v=ZbZSe6N_BXs', "Because I'm happy Clap along if you feel like happiness is the truth"]
+        data[_[1]] = {"name": _[2], "url": _[3], "desc": _[4]}
 
     conn.close()
     return data
-
-
-    

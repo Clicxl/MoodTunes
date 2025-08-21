@@ -3,6 +3,7 @@ from fer import FER
 from time import sleep
 import time
 
+
 def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=False):
     detector = FER(mtcnn=use_mtcnn)
     cap = cv2.VideoCapture(camera_index)
@@ -11,7 +12,6 @@ def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=Fal
         return
 
     stable_emotion = "Neutral"
-    last_emotion = stable_emotion
     last_update_time = time.time()
     stability_threshold = 1.5  # seconds to wait before updating emotion
 
@@ -26,13 +26,13 @@ def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=Fal
         current_time = time.time()
 
         if results:
-            emotions = results[0]['emotions']
+            emotions = results[0]["emotions"]
             top_emotion = max(emotions, key=emotions.get).capitalize()
         else:
             top_emotion = "No Face"
 
         # Always update the frame in shared data for smooth video feed
-        shared_data['frame'] = frame
+        shared_data["frame"] = frame
 
         # Update emotion only if stable for threshold duration
         if top_emotion == stable_emotion:
@@ -43,13 +43,13 @@ def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=Fal
                 last_update_time = current_time
 
         # Update shared emotion after stability check
-        shared_data['emotion'] = stable_emotion
+        shared_data["emotion"] = stable_emotion
 
         # Optionally draw bounding box and label on the frame
         if results:
-            (x, y, w, h) = results[0]['box']
+            (x, y, w, h) = results[0]["box"]
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            
+
         sleep(0.024)  # keep frame grab roughly 24 fps
 
     cap.release()

@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def create_db_and_insert(json_data, db_path):
     """
     Create SQLite DB, table, and insert JSON data.
@@ -29,17 +30,21 @@ def create_db_and_insert(json_data, db_path):
     ]
 
     # Bulk insert all records
-    cur.executemany("""
+    cur.executemany(
+        """
         INSERT INTO emotion_songs (emotion, song_title, youtube_url, song_line)
         VALUES (?, ?, ?, ?)
-    """, records)
+    """,
+        records,
+    )
 
     conn.commit()
     conn.close()
 
+
 # Example Usage:
 
 if __name__ == "__main__":
-  # insert json data
-  # create_db_and_insert("json_data","DB/emotion_songs.sqlite") 
-  pass
+    # insert json data
+    # create_db_and_insert("json_data","DB/emotion_songs.sqlite")
+    pass
