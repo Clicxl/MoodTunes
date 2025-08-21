@@ -1,88 +1,57 @@
-# Real-Time Emotion Detection with FER and ttkbootstrap | MoodVision
+# MoodTunes: The Emotion-Powered Music Flask App
 
-This project provides a real-time emotion detection system using the [FER](https://github.com/justinshenk/fer) library and a modern GUI built with [ttkbootstrap](https://ttkbootstrap.readthedocs.io/). The application captures webcam video, detects emotions on faces, and displays the video feed and detected emotion in a responsive, user-friendly window.
-
----
+A Python Flask web application that detects user emotions and plays corresponding songs from YouTube. MoodTunes uses machine learning to understand your mood and streams the perfect music to match your feelings.
 
 ## Features
+- Real-time emotion detection from user input or camera.
+- Personalized song recommendations sourced from YouTube.
+- User-friendly and responsive Flask web interface.
+- Seamless integration with YouTube for music playback.
 
-- Real-time webcam video capture
-- Live emotion detection using FER (Facial Expression Recognition)
-- Modern, responsive UI with ttkbootstrap
-- Clean separation of detection logic and GUI
-
----
-
-## Prerequisites
-
-- [uv](https://astral.sh/uv) (Python package and environment manager)
-- **Python 3.12** (TensorFlow and FER require Python ≤3.12)
-
----
+## Technologies Used
+- Python 3.x
+- Flask
+- Emotion Detection Model (custom or pre-trained)
+- YouTube API or scraping tools
+- uv for virtual environment and dependency management
 
 ## Installation
 
-### 1. Install `uv`
+### Clone the Repository
+```bash
+git clone https://github.com/Clicxl/MoodTunes.git
+cd MoodTunes
+```
 
-**Linux/macOS:**
+### Setup Virtual Environment and Install Dependencies using uv
+You should have `uv` python package manager installed
 
-`curl -LsSf https://astral.sh/uv/install.sh | sh`
+```bash
+uv init
+uv sync
+uv install
+```
 
----
+### Run the Application
 
-**Windows (PowerShell):**
-
-`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
-
----
-
-### 3. Create and Activate a Virtual Environment with Python 3.12
-
-`uv init --python 3.12.11`
-
----
-
-### 4. Install Required Packages
-`uv add -r requirements.txt`
+```bash 
+uv run main.py
+```
 
 
----
+Then open your browser and go to `http://localhost:5000` to start using MoodTunes.
 
-## Running the Application
+## Usage
+- Provide input or use your camera to detect emotions.
+- Enjoy song recommendations and playback directly within the app.
 
-Assuming your entry point is `main.py`:
+## Contributing
+Contributions are highly welcome! Feel free to fork the repository, create feature branches, and submit pull requests. For questions or suggestions, please open an issue.
 
-`uv run main.py`
-
----
-
-## Project Structure Example
-
-MoodVision/
-├── scripts/
-│ └── detectModel.py
-│ └── UI.py
-├── main.py
-├── README.md
-└── .venv/
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
 
 ---
 
-## Notes
+Enjoy your personalized music journey with MoodTunes!
 
-- Make sure your webcam is connected and accessible.
-- If you encounter errors regarding TensorFlow or FER compatibility, ensure you are using Python 3.12.
-- For best performance, avoid running heavy applications in the background while using real-time detection.
-- If you reorganize your files, update import paths accordingly.
-
----
-
-## References
-
-- [uv documentation](https://docs.astral.sh/uv/)
-- [FER library](https://github.com/justinshenk/fer)
-- [ttkbootstrap](https://ttkbootstrap.readthedocs.io/)
-
----
-
-**Enjoy real-time emotion detection with a modern Python GUI!**
