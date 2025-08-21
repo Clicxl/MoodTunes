@@ -1,0 +1,19 @@
+[project]
+name = "MoodVision"
+version = "0.1.1"
+description = "This project provides a real-time emotion detection system using the FER library and a modern GUI built with ttkbootstrap. The application captures webcam video, detects emotions on faces, and displays the video feed and detected emotion in a responsive window."
+readme = "README.md"
+requires-python = "==3.12.11"
+dependencies = [
+    "fer>=22.5.1",
+    "ffmpeg-python>=0.2.0",
+    "logging>=0.4.9.6",
+    "moviepy==1.0.3",
+    "opencv-python>=4.11.0.86",
+    "pygame-ce>=2.5.5",
+    "requests>=2.32.4",
+    "tensorflow>=2.19.0",
+    "thread>=2.0.5",
+    "ttkbootstrap>=1.14.0",
+    "yt-dlp>=2025.6.30",
+]
