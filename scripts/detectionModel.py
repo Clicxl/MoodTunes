@@ -45,7 +45,7 @@ def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=Fal
         # Optionally draw bounding box and label on the frame
         if results:
             for face in results:
-                (x, y, w, h) = face[0]["box"]
+                (x, y, w, h) = face["box"]
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
                 cv2.putText(
