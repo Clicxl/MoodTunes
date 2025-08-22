@@ -31,9 +31,6 @@ def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=Fal
         else:
             top_emotion = "No Face"
 
-        # Always update the frame in shared data for smooth video feed
-        shared_data["frame"] = frame
-
         # Update emotion only if stable for threshold duration
         if top_emotion == stable_emotion:
             last_update_time = current_time  # reset timer on stability
@@ -47,8 +44,23 @@ def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=Fal
 
         # Optionally draw bounding box and label on the frame
         if results:
-            (x, y, w, h) = results[0]["box"]
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            for face in results:
+                (x, y, w, h) = face[0]["box"]
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+                cv2.putText(
+                    frame,
+                    top_emotion,
+                    (x, y - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.9,
+                    (0, 255, 0),
+                    0.2,
+                    cv2.LINE_AA,
+                )
+
+        # Always update the frame in shared data for smooth video feed
+        shared_data["frame"] = frame
 
         sleep(0.024)  # keep frame grab roughly 24 fps
 
