@@ -9,6 +9,7 @@ dependencies = [
     "flask>=3.1.2",
     "flask-sockets>=0.2.1",
     "logging>=0.4.9.6",
+    "openai>=1.101.0",
     "opencv-python>=4.11.0.86",
     "requests>=2.32.4",
     "response>=0.5.0",

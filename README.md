@@ -31,6 +31,10 @@ uv init
 uv sync
 uv install
 ```
+### Creating and Adding OPENAI API keys
+- Create a new file `.env` file
+- Paste `OPENAI_API_KEY="<your API key here>"` inside the file 
+- Remove the placeholder text with your API KEY
 
 ### Run the Application
 
