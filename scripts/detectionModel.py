@@ -55,7 +55,7 @@ def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=Fal
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.9,
                     (0, 255, 0),
-                    0.2,
+                    2,
                     cv2.LINE_AA,
                 )
 
