@@ -4,12 +4,11 @@ from scripts.load_music import (
 )  # assumes this function exists and works
 import cv2
 from openai import OpenAI
-from dotenv import load_dotenv
-
+from dotenv import dotenv_values
 
 app = Flask(__name__)
 shared_data = None  # global reference to shared_data or detector passed from main
-api_key: str = str(load_dotenv(".env")["OPENAI_API_KEY"])
+api_key: str = str(dotenv_values(".env")["OPENAI_API_KEY"])
 
 
 def set_shared_data(data):
