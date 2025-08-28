@@ -3,43 +3,73 @@
   <head>
     <meta charset="UTF-8" />
     <title>Emotion Music Player</title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/output.css') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-<body>
-    <main class="content" role="main" aria-label="Emotion Music Player">
-      <img
-        src="{{ url_for('video_feed') }}"
-        alt="Live video feed showing your face"
-        width="800"
-        height="450"
-        decoding="async"
-        loading="lazy"
-      />
-      <h1 id="emotion-label">Emotion: {{ emotion.capitalize() }}</h1>
+<body class="max-w-screen max-h-screen bg-slate-700 text-white">
+    <main class="content grid grid-cols-2 gap-1 m-8" role="main" aria-label="Emotion Music Player">
+      <div class="cameraFrame flex flex-col justify-center items-center h-screen gap-4">
+        <img
+          src="{{ url_for('video_feed') }}"
+          alt="Live video feed showing your face"
+          decoding="async"
+          loading="lazy"
+          class="flex-10 border-2 border-slate-950 w-[90%]"
+        />
+        <h1 id="emotion-label" class="flex-2 text-center w-full text-2xl">Emotion: {{ emotion.capitalize() }}</h1>
+      </div>
+      
+      <div class="youtube flex flex-col justify-center items-center h-screen">
+        <h2 id="song-name" class="flex-1 text-2xl w-full text-center">Suggested Songs</h2>
 
-      <p id="song-line"></p>
-      <iframe
-        id="song-video"
-        src=""
+        <div class="frames flex flex-col gap-4 w-xl h-full flex-11">
+        <iframe
+      class="song-video rounded-2xl flex-1"
+      src=""
         allowfullscreen
         title="Currently playing song video"
         aria-label="Now playing song video"
-      ></iframe>
-      <h2 id="song-name">Now Playing: Unknown</h2>
+        ></iframe>
+        <iframe
+      class="song-video rounded-2xl flex-1"
+      src=""
+        allowfullscreen
+        title="Currently playing song video"
+        aria-label="Now playing song video"
+        ></iframe>
+        <iframe
+      class="song-video rounded-2xl flex-1"
+      src=""
+        allowfullscreen
+        title="Currently playing song video"
+        aria-label="Now playing song video"
+        ></iframe>
+      </div>
+      </div>
+      
     </main>
 
-    <div class="chatbox">
-      <h2>AI Chatbot</h2>
-      <div id="chat-messages"></div>
-      <form id="chat-form" >
-        <input type="text" id="chat-input" placeholder="Type your question..." />
-        <button type="submit">Send</button>
-      </form>
+    <button class="chat-toggle rounded-3xl absolute bottom-[3%] bg-blue-400 right-[2%] w-16 h-16 text-2xl text-center flex justify-center items-center hover:bg-blue-500 hover:scale-110 shadow-xl/30 shadow-blue-900">
+    <i class="fa-solid fa-robot text-slate-800" ></i>      
+    </button>
+
+    <div class="chatbox absolute bottom-[10%] bg-blue-800 right-[2%] w-xl h-128 p-8 pt-4 rounded-2xl flex flex-col" style="display: none;">
+      <div class="title flex gap-4 justify-center items-center flex-1 min-h-1/6">
+        <i class="fa-solid fa-robot text-white text-3xl" ></i>      
+        <h2 class="text-center text-2xl text-white">AI Chatbot</h2>
+      </div>
+
+      <div id="chat-messages" class="w-full p-4 rounded-2xl min-h-3/4 flex-9 bg-blue-900"></div>
+
+        <form id="chat-form" class="flex-2 flex flex-row mt-2 mb-2 p-2 rounded-2x w-full gap-2">
+          <input type="text" id="chat-input" placeholder="Type your question..." class="flex-3 bg-blue-900 focus:outline-slate-800 focus:outline-2 p-2 outline-0 rounded-xl"/>
+          <button type="submit" class="flex-1 hover:bg-blue-950 bg-blue-900 p-2 rounded-xl">Send</button>
+        </form>
     </div>
 
 
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='dist/index.js') }}"></script>
 
   </body>
 </html>
