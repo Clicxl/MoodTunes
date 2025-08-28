@@ -712,6 +712,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "icecream" },
     { name = "ruff" },
 ]
 
@@ -731,7 +732,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.12.9" }]
+dev = [
+    { name = "icecream", specifier = ">=2.1.7" },
+    { name = "ruff", specifier = ">=0.12.9" },
+]
 
 [[package]]
 name = "moviepy"
