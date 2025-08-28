@@ -16,17 +16,6 @@ def set_shared_data(data):
     shared_data = data
 
 
-def pick_song(songs: dict, emotion: str) -> dict:
-    song = songs.get(emotion.lower())
-    if not song:
-        return {"name": "No song found", "url": "", "line": ""}
-    return {
-        "name": song.get("name", ""),
-        "url": song.get("url", ""),
-        "line": song.get("line", ""),
-    }
-
-
 def gen_frames():
     while True:
         if shared_data is None or shared_data.get("frame") is None:
@@ -42,8 +31,6 @@ def gen_frames():
         # Yield the frame in multipart format for streaming
         yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n")
 
-
-songs = load_song_to_dict("DB/emotion_songs.sqlite")
 
 # Set OpenAI API key (use environment variable for safety in production)
 client = OpenAI(api_key=api_key)
@@ -81,15 +68,9 @@ def current_emotion():
     else:
         emotion = shared_data.get("emotion", "neutral")
 
-    song = pick_song(songs, emotion)
-    return jsonify(
-        {
-            "emotion": emotion,
-            "song_name": song.get("name"),
-            "song_url": song.get("url"),
-            "song_line": song.get("line"),
-        }
-    )
+    songs: [str, dict, ...] = load_song_to_dict("DB/emotion_songs.sqlite", emotion)[:4]
+
+    return jsonify(songs)
 
 
 @app.route("/")
