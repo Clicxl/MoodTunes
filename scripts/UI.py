@@ -154,6 +154,7 @@ def signup():
             msg = "User registered successfully!"
         except sqlite3.IntegrityError:
             msg = "Error: User with this email already exists."
+            return redirect("/login")
 
         finally:
             conn.close()

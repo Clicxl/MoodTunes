@@ -40,6 +40,7 @@ def create_user_table(db_path: str):
         """
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password BLOB NOT NULL
         )
