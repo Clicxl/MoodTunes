@@ -6,7 +6,7 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/output.css') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-<body class="max-w-screen max-h-screen bg-slate-700 text-white">
+<body class="max-w-screen max-h-screen bg-slate-900 text-white font-bold">
     <main class="content grid grid-cols-2 gap-1 m-8" role="main" aria-label="Emotion Music Player">
       <div class="cameraFrame flex flex-col justify-center items-center h-screen gap-4">
         <img
@@ -14,9 +14,9 @@
           alt="Live video feed showing your face"
           decoding="async"
           loading="lazy"
-          class="flex-10 border-2 border-slate-950 w-[90%]"
+          class="flex-10 border-2 border-rose-700 rounded-md w-[90%]"
         />
-        <h1 id="emotion-label" class="flex-2 text-center w-full text-2xl">Emotion: {{ emotion.capitalize() }}</h1>
+        <h1 id="emotion-label" class="flex-2 text-center flex justify-center items-center w-[90%] text-3xl bg-pink-300 rounded-2xl">Emotion: {{ emotion.capitalize() }}</h1>
       </div>
       
       <div class="youtube flex flex-col justify-center items-center h-screen">
@@ -49,21 +49,21 @@
       
     </main>
 
-    <button class="chat-toggle rounded-3xl absolute bottom-[3%] bg-blue-400 right-[2%] w-16 h-16 text-2xl text-center flex justify-center items-center hover:bg-blue-500 hover:scale-110 shadow-xl/30 shadow-blue-900">
-    <i class="fa-solid fa-robot text-slate-800" ></i>      
+    <button class="chat-toggle rounded-3xl absolute bottom-[3%] bg-pink-300 right-[2%] w-16 h-16 text-2xl text-center flex justify-center items-center hover:bg-pink-300 hover:scale-110 shadow-xl/30 shadow-rose-900">
+    <i class="fa-solid fa-robot text-rose-900" ></i>      
     </button>
 
-    <div class="chatbox absolute bottom-[10%] bg-blue-800 right-[2%] w-xl h-128 p-8 pt-4 rounded-2xl flex flex-col" style="display: none;">
-      <div class="title flex gap-4 justify-center items-center flex-1 min-h-1/6">
+    <div class="chatbox absolute bottom-[11%] bg-pink-300 right-[2%] w-xl max-h-8/12 h-full p-4 rounded-2xl flex flex-col gap-4 " style="display: none;">
+      <div class="title flex gap-4 justify-center items-center flex-2 bg-rose-700 rounded-2xl p-2 mb-2">
         <i class="fa-solid fa-robot text-white text-3xl" ></i>      
         <h2 class="text-center text-2xl text-white">AI Chatbot</h2>
       </div>
 
-      <div id="chat-messages" class="w-full p-4 rounded-2xl min-h-3/4 flex-9 bg-blue-900"></div>
+      <div id="chat-messages" class="w-full p-4 rounded-2xl min-h-3/4 flex-9 bg-rose-700"></div>
 
-        <form id="chat-form" class="flex-2 flex flex-row mt-2 mb-2 p-2 rounded-2x w-full gap-2">
-          <input type="text" id="chat-input" placeholder="Type your question..." class="flex-3 bg-blue-900 focus:outline-slate-800 focus:outline-2 p-2 outline-0 rounded-xl"/>
-          <button type="submit" class="flex-1 hover:bg-blue-950 bg-blue-900 p-2 rounded-xl">Send</button>
+        <form id="chat-form" class="flex-4 flex flex-row mt-2 mb-2 p-2 rounded-2x w-full gap-2 min-h-1/6">
+          <input type="text" id="chat-input" placeholder="Type your question..." class="flex-3 bg-rose-700 focus:outline-rose-900 focus:outline-2 p-2 outline-0 rounded-xl"/>
+          <button type="submit" class="flex-1 hover:bg-rose-600 bg-rose-700 p-2 rounded-xl">Send</button>
         </form>
     </div>
 

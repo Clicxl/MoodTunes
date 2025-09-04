@@ -5,6 +5,7 @@ description = "This project provides a real-time emotion detection system using 
 readme = "README.md"
 requires-python = "==3.12.11"
 dependencies = [
+    "bcrypt>=4.3.0",
     "fer>=22.5.1",
     "flask>=3.1.2",
     "flask-sockets>=0.2.1",

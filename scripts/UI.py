@@ -1,10 +1,10 @@
-from flask import Flask, render_template, Response, jsonify, request
-from scripts.load_music import (
-    load_song_to_dict,
-)  # assumes this function exists and works
+from flask import Flask, render_template, Response, jsonify, request, redirect
+from scripts.load_music import load_song_to_dict
 import cv2
 from openai import OpenAI
 from dotenv import dotenv_values
+import sqlite3
+import bcrypt
 
 app = Flask(__name__)
 shared_data = None  # global reference to shared_data or detector passed from main
@@ -30,6 +30,29 @@ def gen_frames():
 
         # Yield the frame in multipart format for streaming
         yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n")
+
+
+def check_user(email: str, password: str) -> bool:
+    """Return True if user exists and password matches, else False."""
+    conn = sqlite3.connect("DB/users.sqlite")
+    cursor = conn.cursor()
+    cursor.execute("SELECT password FROM users WHERE email = ?", (email,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        stored_hash = row[0]
+        # stored_hash may be a bytes or str type depending on how it was stored
+        if isinstance(stored_hash, str):
+            stored_hash = stored_hash.encode("utf-8")
+        return bcrypt.checkpw(password.encode("utf-8"), stored_hash)
+    return False
+
+
+def hash_password(password) -> bytes:
+    bytes = password.encode("utf-8")
+    salt = bcrypt.gensalt()
+    hash = bcrypt.hashpw(bytes, salt)
+    return hash
 
 
 # Set OpenAI API key (use environment variable for safety in production)
@@ -74,6 +97,71 @@ def current_emotion():
 
 
 @app.route("/")
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    msg = ""
+    if (
+        request.method == "POST"
+        and "email" in request.form
+        and "password" in request.form
+    ):
+        email = request.form["email"]
+        password = request.form["password"]
+
+        password_hash = hash_password(password)
+
+        # Check if user exists in the database
+        user = check_user(email, password)
+
+        if user:
+            msg = "Login successful!"
+            return redirect("/home")  # Redirect to home page on successful login
+        else:
+            msg = "Invalid credentials, please try again."
+            return render_template("login.html", msg=msg)
+
+        print(
+            f"{msg} \n Email: {email} \n Password: {password} \n Hashed Password: {password_hash.decode('utf-8')}"
+        )
+    return render_template("login.html")
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    msg = ""
+    if (
+        request.method == "POST"
+        and "username" in request.form
+        and "email" in request.form
+        and "password" in request.form
+    ):
+        username = request.form["username"]
+        email = request.form["email"]
+        password = request.form["password"]
+
+        password_hash = hash_password(password)
+
+        # Add user to the database
+        conn = sqlite3.connect("DB/users.sqlite")
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+                (username, email, password_hash),
+            )
+            conn.commit()
+            return redirect("/login")
+            msg = "User registered successfully!"
+        except sqlite3.IntegrityError:
+            msg = "Error: User with this email already exists."
+
+        finally:
+            conn.close()
+
+    return render_template("register.html", msg=msg)
+
+
+@app.route("/home")
 def index():
     current_emotion = (
         shared_data.get("emotion", "neutral") if shared_data else "neutral"

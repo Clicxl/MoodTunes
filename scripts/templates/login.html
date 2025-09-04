@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/output.css') }}">
+    <title>Login</title>
+</head>
+<body class="flex flex-col justify-center items-center min-h-screen bg-slate-900">
+  <h1 class="text-center font-bold text-white pb-8 text-4xl">Mood Tunes</h1>
+    <div class="container bg-rose-700 p-8 rounded-lg shadow-lg text-white max-w-2xl w-full">
+        <h2 class="text-center font-bold text-2xl mb-2">Login Form</h2>
+    {% if msg != "" %}
+        <div class="bg-red-500 text-white p-4 rounded mb-4 text-center">
+            {{ msg }}
+        </div>
+    {% endif %}
+<form action="/login" method="POST">
+  <div class="mb-4 flex flex-row items-center">
+    <label for="username" class="font-bold ">Email:</label>
+    <input type="email" id="email" name="email" class="bg-rose-900 w-full p-4 m-2 rounded-2xl focus:outline-0" required placeholder="Enter your email">
+  </div>
+  <div class="mb-4 flex flex-row items-center">
+    <label for="password" class="font-bold">Password:</label>
+    <input type="password" id="password" name="password" class="bg-rose-900 w-full p-4 m-2 rounded-2xl focus:outline-0" required placeholder="Enter your password">
+  </div>
+  <div>
+    <input type="submit" value="Login" class="bg-rose-900 p-4 rounded-2xl font-bold hover:bg-rose-800 cursor-pointer w-full mt-4 mb-0">
+  </div>
+</form>
+    <div class="text-center mt-4">
+        <a href="/signup" class="text-white hover:underline">Don't have an account? Register here.</a>
+    </div>    
+</div>
+
+</body>
+
+</html>

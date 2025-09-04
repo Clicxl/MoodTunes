@@ -12,3 +12,6 @@ wheels/
 # Other Logging Files
 newfile.log
 .env
+
+.prettierignore
+scripts/.prettierrc
