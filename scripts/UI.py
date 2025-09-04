@@ -119,10 +119,7 @@ def login():
         else:
             msg = "Invalid credentials, please try again."
             return render_template("login.html", msg=msg)
-
-        print(
-            f"{msg} \n Email: {email} \n Password: {password} \n Hashed Password: {password_hash.decode('utf-8')}"
-        )
+            
     return render_template("login.html")
 
 

@@ -32,22 +32,3 @@ def load_song_to_dict(db_path: str, emotion: str) -> [str, dict, ...]:
 
     conn.close()
     return data
-
-def create_user_table(db_path: str):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password BLOB NOT NULL
-        )
-        """
-    )
-    conn.commit()
-    conn.close()
-
-if __name__ == "__main__":
-    create_user_table("DB/users.sqlite")

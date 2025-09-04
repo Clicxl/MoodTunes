@@ -12,7 +12,6 @@ A Python Flask web application that detects user emotions and plays correspondin
 - Python 3.x
 - Flask
 - Emotion Detection Model (custom or pre-trained)
-- YouTube API or scraping tools
 - uv for virtual environment and dependency management
 
 ## Installation
@@ -29,19 +28,24 @@ You should have `uv` python package manager installed
 ```bash
 uv init
 uv sync
-uv install
 ```
 ### Creating and Adding OPENAI API keys
-- Create a new file `.env` file
-- Paste `OPENAI_API_KEY="<your API key here>"` inside the file 
-- Remove the placeholder text with your API KEY
+- Run the following command to setup the entire project:
+```bash
+uv run scripts/setup.py
+```
+
+#### For Developers 
+As the project uses tailwindcss you have to run the tailwindcss command with node/bun in a new terminal:
+```bash
+node @tailwindcss/cli -i ./static/src/input.css -o ./static/dist/output.css --watch 
+```
 
 ### Run the Application
 
 ```bash 
 uv run main.py
 ```
-
 
 Then open your browser and go to `http://localhost:5000` to start using MoodTunes.
 
