@@ -14,4 +14,3 @@ newfile.log
 
 .prettierignore
 scripts/.prettierrc
-DB/users.sqlite
