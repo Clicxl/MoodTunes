@@ -1,75 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Emotion Music Player</title>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/output.css') }}">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Emotion Music Player - Spotify UI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dist/output.css') }}" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+    integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <style>
+    /* Custom Tailwind colors fallback */
+    :root {
+      --color-slate-900: oklch(0.1076 0.0126 359.82);
+      --color-pink-300: oklch(0.7674 0.0778 1.35);
+      --color-rose-900: oklch(0.4205 0.1352 9.34);
+      --color-rose-700: oklch(0.5955 0.2068 10.9);
+    }
+  </style>
+</head>
+<body class="flex h-screen bg-slate-900 text-white font-bold overflow-hidden">
 
-<body class="max-w-screen max-h-screen bg-slate-900 text-white font-bold">
-    <main class="content grid grid-cols-2 gap-1 m-8" role="main" aria-label="Emotion Music Player">
-      <div class="cameraFrame flex flex-col justify-center items-center h-screen gap-4">
-        <img
-          src="{{ url_for('video_feed') }}"
-          alt="Live video feed showing your face"
-          decoding="async"
-          loading="lazy"
-          class="flex-10 border-2 border-rose-700 rounded-md w-[90%]"
-        />
-        <h1 id="emotion-label" class="flex-2 text-center flex justify-center items-center w-[90%] text-3xl bg-pink-300 rounded-2xl">Emotion: {{ emotion.capitalize() }}</h1>
-      </div>
-      
-      <div class="youtube flex flex-col justify-center items-center h-screen">
-        <h2 id="song-name" class="flex-1 text-2xl w-full text-center">Suggested Songs</h2>
 
-        <div class="frames flex flex-col gap-4 w-xl h-full flex-11">
-        <iframe
-      class="song-video rounded-2xl flex-1"
-      src=""
-        allowfullscreen
-        title="Currently playing song video"
-        aria-label="Now playing song video"
-        ></iframe>
-        <iframe
-      class="song-video rounded-2xl flex-1"
-      src=""
-        allowfullscreen
-        title="Currently playing song video"
-        aria-label="Now playing song video"
-        ></iframe>
-        <iframe
-      class="song-video rounded-2xl flex-1"
-      src=""
-        allowfullscreen
-        title="Currently playing song video"
-        aria-label="Now playing song video"
-        ></iframe>
-      </div>
-      </div>
-      
-    </main>
+  <!-- Main Content -->
+  <main class="flex-1 p-10 overflow-y-auto">
+    <header class="mb-10">
+      <h2 class="text-5xl font-bold mb-2">Welcome {{ username }}</h2>
+      <p class="text-gray-400 text-xl">Here are some songs for you</p>
+    </header>
 
-    <button class="chat-toggle rounded-3xl absolute bottom-[3%] bg-pink-300 right-[2%] w-16 h-16 text-2xl text-center flex justify-center items-center hover:bg-pink-300 hover:scale-110 shadow-xl/30 shadow-rose-900">
-    <i class="fa-solid fa-robot text-rose-900" ></i>      
-    </button>
-
-    <div class="chatbox absolute bottom-[11%] bg-pink-300 right-[2%] w-xl max-h-8/12 h-full p-4 rounded-2xl flex flex-col gap-4 " style="display: none;">
-      <div class="title flex gap-4 justify-center items-center flex-2 bg-rose-700 rounded-2xl p-2 mb-2">
-        <i class="fa-solid fa-robot text-white text-3xl" ></i>      
-        <h2 class="text-center text-2xl text-white">AI Chatbot</h2>
-      </div>
-
-      <div id="chat-messages" class="w-full p-4 rounded-2xl min-h-3/4 flex-9 bg-rose-700"></div>
-
-        <form id="chat-form" class="flex-4 flex flex-row mt-2 mb-2 p-2 rounded-2x w-full gap-2 min-h-1/6">
-          <input type="text" id="chat-input" placeholder="Type your question..." class="flex-3 bg-rose-700 focus:outline-rose-900 focus:outline-2 p-2 outline-0 rounded-xl"/>
-          <button type="submit" class="flex-1 hover:bg-rose-600 bg-rose-700 p-2 rounded-xl">Send</button>
-        </form>
+    <div id="song-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <!-- Song cards will be rendered here by JS -->
     </div>
+  </main>
 
+  <!-- Emotion Detection Button -->
+   <form action="/emotion_detection" method="get">
+  <button
+    id="emotion-detection-btn"
+    class="fixed bottom-24 right-10 bg-pink-300 text-rose-900 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-pink-400 transition-colors tracking-wider"
+  >
+    Emotion Detection
+  </button>
+  </form>
 
+      <!-- Chatbot Toggle Button -->
+  <button
+    id="chat-toggle"
+    aria-label="Toggle Chatbot"
+    class="fixed bottom-6 right-8 rounded-full bg-pink-300 w-16 h-16 flex justify-center items-center text-2xl text-rose-900 shadow-xl hover:scale-110 hover:bg-pink-400 transition-transform duration-200"
+  >
+    <i class="fa-solid fa-robot"></i>
+  </button>
+
+  <!-- Chatbox -->
+  <div
+    id="chatbox"
+    class="fixed bottom-32 right-8 w-96 max-h-[65vh] bg-pink-300 rounded-2xl flex flex-col shadow-xl overflow-hidden"
+    style="display: none;"
+  >
+    <div class="flex items-center bg-rose-700 p-5 rounded-t-2xl text-white gap-4">
+      <i class="fa-solid fa-robot text-4xl"></i>
+      <h2 class="text-2xl font-semibold">AI Chatbot</h2>
+      <button id="chat-close" aria-label="Close Chatbox" class="ml-auto text-3xl hover:text-pink-300">&times;</button>
+    </div>
+    <div id="chat-messages" class="flex-1 p-5 bg-rose-700 overflow-y-auto space-y-4">
+      <style>
+        #chat-messages a {
+          color: rgb(249, 168, 212); /* pink-300 */
+          text-decoration: none;
+        }
+        #chat-messages a:hover {
+          text-decoration: underline;
+        }
+      </style>
+    </div>
+    <form id="chat-form" class="flex p-5 gap-3 bg-rose-700 rounded-b-2xl" autocomplete="off">
+      <input
+        id="chat-input"
+        type="text"
+        placeholder="Type your question..."
+        class="flex-grow rounded-xl p-3 bg-rose-700 focus:outline-pink-300 focus:outline-2 outline-none text-white"
+        required
+      />
+      <button
+        type="submit"
+        class="bg-pink-300 text-rose-900 font-bold px-6 rounded-xl hover:bg-pink-400 transition-colors"
+      >
+        Send
+      </button>
+    </form>
+  </div>
 
     <script src="{{ url_for('static', filename='dist/index.js') }}"></script>
-
-  </body>
+</body>
 </html>

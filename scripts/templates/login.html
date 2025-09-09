@@ -10,7 +10,7 @@
   <h1 class="text-center font-bold text-white pb-8 text-4xl">Mood Tunes</h1>
     <div class="container bg-rose-700 p-8 rounded-lg shadow-lg text-white max-w-2xl w-full">
         <h2 class="text-center font-bold text-2xl mb-2">Login Form</h2>
-    {% if msg != "" %}
+    {% if (msg != "") and ("Error" in msg) %}
         <div class="bg-red-500 text-white p-4 rounded mb-4 text-center">
             {{ msg }}
         </div>
