@@ -101,9 +101,9 @@ def chat():
         # Generate response using Gemini
         response = client.models.generate_content(
             model="gemini-2.5-flash-lite",
-            contents= prompt,
-            )  # Get the response text
-        
+            contents=prompt,
+        )  # Get the response text
+
         response_text = response.text
 
         return jsonify({"response": response_text})

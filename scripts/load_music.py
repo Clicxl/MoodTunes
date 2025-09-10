@@ -17,9 +17,7 @@ def load_all_songs(db_path: str) -> list:
     data = []
     for row in rows:
         # Assumes columns: id, name, url, desc (adjust if your schema differs)
-        data.append(
-            {"emotion": row[1], "title": row[2], "url": row[3] }
-        )
+        data.append({"emotion": row[1], "title": row[2], "url": row[3]})
     conn.close()
     return data
 
