@@ -118,8 +118,8 @@ def current_emotion():
             emotion = "neutral"
         else:
             emotion = shared_data.get("emotion", "neutral")
-        songs = load_song_to_dict("DB/emotion_songs.sqlite", emotion)
-        return jsonify(songs), 200
+        songs = load_song_to_dict("DB/emotion_songs.sqlite", emotion)[:4]
+        return jsonify([emotion, songs]), 200
     except Exception as e:
         return jsonify(["error", str(e)]), 500
 
@@ -199,10 +199,6 @@ def index():
     if "email" not in session:
         return redirect("/login")
 
-    current_emotion = (
-        shared_data.get("emotion", "neutral") if shared_data else "neutral"
-    )
-
     # Get username from the database
     email = session["email"]
     conn = sqlite3.connect("DB/users.sqlite")
@@ -213,4 +209,4 @@ def index():
 
     username = user[0] if user else "Guest"
     # Render template with username and emotion
-    return render_template("index.html", emotion=current_emotion, username=username)
+    return render_template("index.html", username=username)

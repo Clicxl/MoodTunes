@@ -10,12 +10,14 @@ function getEmbedUrl(url) {
 
 let previousSongs = null;
 
-async function updateEmotionAndSong() {
+
+async function updateSong() {
   try {
     const response = await fetch("/all_songs");
     if (!response.ok) throw new Error("Network response was not ok");
     const data = await response.json();
-
+    console.log(data);
+    
     // Check if the songs data has changed
     if (previousSongs && JSON.stringify(data) === JSON.stringify(previousSongs)) {
       return; // Skip update if data hasn't changed
@@ -53,11 +55,12 @@ async function updateEmotionAndSong() {
   }
 }
 
+
 // Initial load
-updateEmotionAndSong();
+updateSong();
 
 // Update less frequently to prevent iframe flicker
-setInterval(updateEmotionAndSong, 5000); // Check every 5 seconds
+setInterval(updateSong, 5000); // Check every 5 seconds
 
     document.querySelector("#chat-form").onsubmit = async function (e) {
       e.preventDefault();

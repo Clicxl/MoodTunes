@@ -4,7 +4,7 @@ from time import sleep
 import time
 
 
-def emotion_detection_process(shared_data, logger, camera_index=0, use_mtcnn=False):
+def emotion_detection_process(shared_data, logger, camera_index=1, use_mtcnn=False):
     detector = FER(mtcnn=use_mtcnn)
     cap = cv2.VideoCapture(camera_index)
     if not cap.isOpened():
