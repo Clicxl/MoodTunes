@@ -103,8 +103,27 @@ setInterval(updateSong, 5000); // Check every 5 seconds
       }
     };
 
-    document.querySelector("#chat-toggle").addEventListener("click", () => {
-      const chatBox = document.getElementById("chatbox");
+    document.querySelector("#emotion-detection-btn").addEventListener("click", async () => {
+    const btn = document.querySelector("#emotion-detection-btn");
+    btn.disabled = true;
+    btn.textContent = "Detecting emotion... (10s)";
+    
+    try {
+        // Start emotion detection for 10 seconds
+        const response = await fetch("/start_emotion_detection");
+        const data = await response.json();
+        
+        // Redirect based on the response
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        }
+    } catch (error) {
+        console.error("Error during emotion detection:", error);
+        btn.textContent = "Error - Try again";
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Emotion Detection";
+    }
       chatBox.style.display = chatBox.style.display === "none" || !chatBox.style.display ? "flex" : "none";
     });
 

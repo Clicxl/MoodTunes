@@ -1,5 +1,6 @@
 from scripts.load_music import load_song_to_dict, load_all_songs
 from flask import Flask, render_template, Response, jsonify, request, redirect, session
+import time
 import cv2
 from dotenv import dotenv_values
 from google import genai
@@ -70,6 +71,31 @@ client = genai.Client(api_key=api_key)
 @app.route("/video_feed")
 def video_feed():
     return Response(gen_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+
+@app.route("/start_emotion_detection")
+def start_emotion_detection():
+    start_time = time.time()
+    last_emotion = "neutral"
+
+    while time.time() - start_time < 10:  # Run for 10 seconds
+        if shared_data and shared_data.get("emotion"):
+            last_emotion = shared_data.get("emotion")
+
+    # Check if emotion requires breathing exercise
+    if last_emotion.lower() in ["sad", "angry"]:
+        return jsonify({"redirect": "/breathing"})
+
+    return jsonify({"redirect": "/home"})
+
+
+@app.route("/breathing")
+def breathing():
+    last_emotion = "neutral"    
+    if shared_data and shared_data.get("emotion"):
+            last_emotion = shared_data.get("emotion")
+
+    return render_template("breathing.html", emotion=last_emotion)
 
 
 # Route to get all songs from the DB
