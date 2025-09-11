@@ -28,3 +28,26 @@ updateEmotionAndSong();
 
 // Update every 1 seconds
 setInterval(updateEmotionAndSong, 1000);
+
+document.querySelector("#emotion-detection-btn").addEventListener("click", async () => {
+const btn = document.querySelector("#emotion-detection-btn");
+btn.disabled = true;
+btn.textContent = "Detecting emotion... (10s)";
+
+  try {
+      // Start emotion detection for 10 seconds
+      const response = await fetch("/start_emotion_detection");
+      const data = await response.json();
+      
+      // Redirect based on the response
+      if (data.redirect) {
+          window.location.href = data.redirect;
+      }
+  } catch (error) {
+      console.error("Error during emotion detection:", error);
+      btn.textContent = "Error - Try again";
+  } finally {
+      btn.disabled = false;
+      btn.textContent = "Home";
+  }
+});
