@@ -91,9 +91,9 @@ def start_emotion_detection():
 
 @app.route("/breathing")
 def breathing():
-    last_emotion = "neutral"    
+    last_emotion = "neutral"
     if shared_data and shared_data.get("emotion"):
-            last_emotion = shared_data.get("emotion")
+        last_emotion = shared_data.get("emotion")
 
     return render_template("breathing.html", emotion=last_emotion)
 

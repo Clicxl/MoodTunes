@@ -50,14 +50,25 @@
     </main>
 
   <!-- Emotion Detection Button -->
-   <form action="/home" method="get">
+   <div class="fixed bottom-24 right-10 flex flex-col">
+   <form action="/emotion_detection" method="get">
   <button
     id="emotion-detection-btn"
+    class="fixed bottom-40 right-10 bg-pink-300 text-rose-900 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-pink-400 transition-colors tracking-wider"
+  >
+    Emotion Detection
+  </button>
+  </form>
+
+   <form action="/home" method="get">
+  <button
+    id="home-btn"
     class="fixed bottom-24 right-10 bg-pink-300 text-rose-900 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-pink-400 transition-colors tracking-wider"
   >
     Home
   </button>
   </form>
+</div>
 
       <!-- Chatbot Toggle Button -->
   <button

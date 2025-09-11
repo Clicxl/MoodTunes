@@ -34,6 +34,16 @@ const btn = document.querySelector("#emotion-detection-btn");
 btn.disabled = true;
 btn.textContent = "Detecting emotion... (10s)";
 
+let secondsLeft = 10;
+const countdownInterval = setInterval(() => {
+  if (secondsLeft > 0) {
+    btn.textContent = `Detecting emotion... (${secondsLeft--}s)`;
+  } else {
+    clearInterval(countdownInterval);
+  }
+}, 1000);
+
+
   try {
       // Start emotion detection for 10 seconds
       const response = await fetch("/start_emotion_detection");
