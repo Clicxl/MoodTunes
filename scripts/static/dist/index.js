@@ -8,6 +8,13 @@ function getEmbedUrl(url) {
   return `https://www.youtube.com/embed/${videoIdMatch[1]}`;
 }
 
+function getLanguage() {
+  lang = document.querySelector("#language-select").value
+  const currentUrl = new URL(window.location.href);
+  currentUrl.searchParams.set("lang", lang);
+  window.location.href = currentUrl.toString();
+}
+
 let previousSongs = null;
 
 
@@ -16,8 +23,7 @@ async function updateSong() {
     const response = await fetch("/all_songs");
     if (!response.ok) throw new Error("Network response was not ok");
     const data = await response.json();
-    console.log(data);
-    
+
     // Check if the songs data has changed
     if (previousSongs && JSON.stringify(data) === JSON.stringify(previousSongs)) {
       return; // Skip update if data hasn't changed
@@ -59,56 +65,61 @@ async function updateSong() {
 // Initial load
 updateSong();
 
+
 // Update less frequently to prevent iframe flicker
 setInterval(updateSong, 5000); // Check every 5 seconds
 
-    document.querySelector("#chat-form").onsubmit = async function (e) {
-      e.preventDefault();
-      const input = document.getElementById("chat-input");
-      const userMsg = input.value.trim();
-      if (!userMsg) return;
+document.querySelector("#chat-form").onsubmit = async function (e) {
+  e.preventDefault();
+  const input = document.getElementById("chat-input");
+  const userMsg = input.value.trim();
+  if (!userMsg) return;
 
-      const messagesDiv = document.getElementById("chat-messages");
-      messagesDiv.innerHTML += `<div><b>You:</b> ${userMsg}</div>`;
-      input.value = "";
+  const messagesDiv = document.getElementById("chat-messages");
+  messagesDiv.innerHTML += `<div><b>You:</b> ${userMsg}</div>`;
+  input.value = "";
 
-      try {
-        const response = await fetch("/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMsg }),
+  try {
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userMsg }),
+    });
+    const data = await response.json();
+    if (data.response) {
+      // Function to format YouTube links
+      const formatYouTubeLinks = (text) => {
+        const youtubePattern = /(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]+/g;
+        return text.replace(youtubePattern, (url) => {
+          const fullUrl = url.startsWith('http') ? url : `https://${url.replace('www.', '')}`;
+          return `<a href="${fullUrl}" class="text-pink-300 hover:underline" target="_blank">${url}</a>`;
         });
-        const data = await response.json();
-        if (data.response) {
-          // Function to format YouTube links
-        const formatYouTubeLinks = (text) => {
-            const youtubePattern = /(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]+/g;
-            return text.replace(youtubePattern, (url) => {
-                const fullUrl = url.startsWith('http') ? url : `https://${url.replace('www.', '')}`;
-                return `<a href="${fullUrl}" class="text-pink-300 hover:underline" target="_blank">${url}</a>`;
-            });
-        };
+      };
 
-        // Add the message with formatted links
-        const formattedResponse = formatYouTubeLinks(data.response);
-        messagesDiv.innerHTML += `<div class="bg-rose-700/50 rounded-lg p-3 mb-2"><b>Bot:</b> ${formattedResponse}</div>`;
-        } else if (data.reply) {
-          messagesDiv.innerHTML += `<div><b>Bot:</b> ${data.reply}</div>`;
-        } else if (data.error) {
-          messagesDiv.innerHTML += `<div style="color:red;"><b>Error:</b> ${data.error}</div>`;
-        }
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      } catch (err) {
-        messagesDiv.innerHTML += `<div style="color:red;"><b>Error communicating with chatbot.</b></div>`;
-      }
-    };
+      // Add the message with formatted links
+      const formattedResponse = formatYouTubeLinks(data.response);
+      messagesDiv.innerHTML += `<div class="bg-rose-700/50 rounded-lg p-3 mb-2"><b>Bot:</b> ${formattedResponse}</div>`;
+    } else if (data.reply) {
+      messagesDiv.innerHTML += `<div><b>Bot:</b> ${data.reply}</div>`;
+    } else if (data.error) {
+      messagesDiv.innerHTML += `<div style="color:red;"><b>Error:</b> ${data.error}</div>`;
+    }
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  } catch (err) {
+    messagesDiv.innerHTML += `<div style="color:red;"><b>Error communicating with chatbot.</b></div>`;
+  }
+};
 
-      document.querySelector("#chat-toggle").addEventListener("click", () => {
-      const chatBox = document.getElementById("chatbox");
-      chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
-    });
+document.querySelector("#chat-toggle").addEventListener("click", () => {
+  const chatBox = document.getElementById("chatbox");
+  chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
+});
 
-    document.querySelector("#chat-close").addEventListener("click", () => {
-      const chatBox = document.getElementById("chatbox");
-      chatBox.style.display = "none";
-    });
+document.querySelector("#chat-close").addEventListener("click", () => {
+  const chatBox = document.getElementById("chatbox");
+  chatBox.style.display = "none";
+});
+
+document.querySelector("#apply-language-btn").addEventListener("click", () => {
+  getLanguage();
+});

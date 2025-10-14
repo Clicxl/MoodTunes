@@ -102,7 +102,8 @@ def breathing():
 @app.route("/all_songs")
 def all_songs():
     try:
-        songs = load_all_songs("DB/emotion_songs.sqlite")
+        lang = shared_data.get("language", "en") if shared_data else "en"
+        songs = load_all_songs("DB/emotion_songs.sqlite", language=lang)
         return jsonify(songs), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -144,7 +145,10 @@ def current_emotion():
             emotion = "neutral"
         else:
             emotion = shared_data.get("emotion", "neutral")
-        songs = load_song_to_dict("DB/emotion_songs.sqlite", emotion)[:4]
+        
+        lang = shared_data.get("language", "en") if shared_data else "en"
+        
+        songs = load_song_to_dict("DB/emotion_songs.sqlite", emotion, language=lang)[:4]
         return jsonify([emotion, songs]), 200
     except Exception as e:
         return jsonify(["error", str(e)]), 500
@@ -234,5 +238,9 @@ def index():
     conn.close()
 
     username = user[0] if user else "Guest"
+
+    lang = request.args.get("lang", "en")
+    shared_data["language"] = lang
+
     # Render template with username and emotion
     return render_template("index.html", username=username)

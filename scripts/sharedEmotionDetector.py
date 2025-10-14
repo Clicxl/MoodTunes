@@ -11,3 +11,7 @@ class SharedEmotionDetector:
     @property
     def current_emotion(self):
         return self.shared_data.get("emotion", "Neutral")
+    
+    @property
+    def language(self):
+        return self.shared_data.get("language", "en")
