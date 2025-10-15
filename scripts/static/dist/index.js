@@ -2,21 +2,27 @@
 // Helper to convert YouTube URL to embed
 function getEmbedUrl(url) {
   if (!url) return '';
-  // Handles both youtu.be and youtube.com/watch?v= formats
-  let videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/);
-  if (!videoIdMatch) return '';
-  return `https://www.youtube.com/embed/${videoIdMatch[1]}`;
-}
-
-function getLanguage() {
-  lang = document.querySelector("#language-select").value
-  const currentUrl = new URL(window.location.href);
-  currentUrl.searchParams.set("lang", lang);
-  window.location.href = currentUrl.toString();
+  // Handles both youtu.be and youtube.com/watch?v= and https://youtu.be/FIaUYKLg5S4?si= formats
+  let videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/) ;
+  let shortIdMatch = url.match(/youtu\.be\/([\w-]{11})/);
+  if (!videoIdMatch && shortIdMatch) {
+    videoIdMatch = shortIdMatch;
+  }
+  if (videoIdMatch && videoIdMatch[1]) {
+    return `https://www.youtube.com/embed/${videoIdMatch[1]}?autoplay=0`;
+  }
+  return '';
 }
 
 let previousSongs = null;
 
+async function updateBackendLanguage(lang) {
+  await fetch("/set_language", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({language: lang})
+  });
+}
 
 async function updateSong() {
   try {
@@ -121,5 +127,10 @@ document.querySelector("#chat-close").addEventListener("click", () => {
 });
 
 document.querySelector("#apply-language-btn").addEventListener("click", () => {
-  getLanguage();
+  lang = document.querySelector("#language-select").value
+  console.log(lang);
+
+  const currentUrl = new URL(window.location.href);
+  currentUrl.searchParams.set("lang", lang);
+  window.location.href = currentUrl.toString();
 });

@@ -223,6 +223,13 @@ def emotion_detection():
     # Render template without passing song; the JS updates it dynamically
     return render_template("emotion.html", emotion=current_emotion)
 
+@app.route("/set_language", methods=["POST"])
+def set_language():
+    data = request.get_json()
+    language = data.get("language", "en")
+    if shared_data is not None:
+        shared_data["language"] = language
+    return jsonify({"status": "success"}), 200
 
 @app.route("/home")
 def index():
@@ -238,6 +245,9 @@ def index():
     conn.close()
 
     username = user[0] if user else "Guest"
+
+    # Constatly check if the url or the href has lang parameter
+    Flask
 
     lang = request.args.get("lang", "en")
     shared_data["language"] = lang
