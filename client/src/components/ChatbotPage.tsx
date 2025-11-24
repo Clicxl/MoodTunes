@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { MascotCharacter } from './MascotCharacter';
-import { Send, Mic } from 'lucide-react';
+import { Send, Mic, AlertCircle } from 'lucide-react';
+import { chatAPI, getErrorMessage } from '../api/apiClient';
 
 type Emotion = 'happy' | 'sad' | 'angry' | 'neutral' | 'disgusted' | 'fearful' | 'surprised';
 type Language = 'en' | 'hi' | 'kn';
@@ -17,6 +18,7 @@ interface Message {
   text: string;
   sender: 'user' | 'bot';
   timestamp: Date;
+  isError?: boolean;
 }
 
 const translations = {
@@ -108,7 +110,7 @@ export function ChatbotPage({ language, currentEmotion, userName }: ChatbotPageP
     { key: 'celebrationMode', label: t.celebrationMode },
   ];
 
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
 
     // Add user message
@@ -122,23 +124,36 @@ export function ChatbotPage({ language, currentEmotion, userName }: ChatbotPageP
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
 
-    // Simulate bot response
+    // Get bot response from API
     setIsTyping(true);
-    setTimeout(() => {
+    try {
+      const response = await chatAPI.sendMessage(text);
       const botMessage: Message = {
         id: messages.length + 2,
-        text: getBotResponse(text),
+        text: response.response || 'Sorry, I couldn\'t process that. Please try again.',
         sender: 'bot',
         timestamp: new Date(),
+        isError: false,
       };
       setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      const errorText = getErrorMessage(error);
+      const botMessage: Message = {
+        id: messages.length + 2,
+        text: `I encountered an error: ${errorText}. Please try again later.`,
+        sender: 'bot',
+        timestamp: new Date(),
+        isError: true,
+      };
+      setMessages(prev => [...prev, botMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const getBotResponse = (userText: string): string => {
     const lowerText = userText.toLowerCase();
-    
+
     if (lowerText.includes('mood') || lowerText.includes('feeling')) {
       return responses.moodHelp.replace('{emotion}', currentEmotion);
     } else if (lowerText.includes('song') || lowerText.includes('music')) {
@@ -150,7 +165,7 @@ export function ChatbotPage({ language, currentEmotion, userName }: ChatbotPageP
     } else if (lowerText.includes('happy') || lowerText.includes('celebrate')) {
       return responses.celebrationMode;
     }
-    
+
     return `I understand you said "${userText}". How can I help you with music today?`;
   };
 
@@ -197,14 +212,16 @@ export function ChatbotPage({ language, currentEmotion, userName }: ChatbotPageP
                 className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] px-5 py-3 rounded-3xl ${
-                    message.sender === 'user'
+                  className={`max-w-[80%] px-5 py-3 rounded-3xl ${message.sender === 'user'
                       ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-br-md'
                       : 'bg-white/80 backdrop-blur-sm text-slate-700 rounded-bl-md border border-white/60'
-                  }`}
+                    }`}
                 >
-                  <p className="text-sm leading-relaxed">{message.text}</p>
-                  <p className={`text-xs mt-1 ${message.sender === 'user' ? 'text-white/70' : 'text-slate-500'}`}>
+                  <div className={`text-sm leading-relaxed flex items-start gap-2 ${message.isError ? 'text-red-600' : ''}`}>
+                    {message.isError && <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />}
+                    <p>{message.text}</p>
+                  </div>
+                  <p className={`text-xs mt-1 ${message.sender === 'user' ? 'text-white/70' : message.isError ? 'text-red-500' : 'text-slate-500'}`}>
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -300,7 +317,7 @@ export function ChatbotPage({ language, currentEmotion, userName }: ChatbotPageP
               <p className="text-sm text-slate-600 mb-4">
                 Hi {userName}! I'm here to help you find the perfect music for your mood.
               </p>
-              
+
               {/* Current mood indicator */}
               <div className="w-full bg-white/60 backdrop-blur-sm rounded-2xl p-4 mt-4">
                 <p className="text-xs text-slate-600 mb-2">Your Current Mood</p>

@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
-import { Play, Heart, Share2 } from 'lucide-react';
+import { Play, Heart, Share2, X } from 'lucide-react';
+import { useState } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 type Emotion = 'happy' | 'sad' | 'angry' | 'neutral' | 'disgusted' | 'fearful' | 'surprised';
@@ -10,6 +11,7 @@ interface SongCardProps {
   coverUrl: string;
   emotion: Emotion;
   language?: string;
+  youtubeUrl?: string;
 }
 
 const emotionEmojis = {
@@ -42,7 +44,16 @@ const emotionBorder = {
   surprised: 'border-pink-300/30',
 };
 
-export function SongCard({ title, artist, coverUrl, emotion, language }: SongCardProps) {
+export function SongCard({ title, artist, coverUrl, emotion, language, youtubeUrl }: SongCardProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const getYoutubeEmbedUrl = (url: string) => {
+    if (!url) return '';
+    // Convert youtube.com/watch?v=ID to youtube.com/embed/ID
+    const videoIdMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+    return videoIdMatch ? `https://www.youtube.com/embed/${videoIdMatch[1]}?autoplay=1` : '';
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -63,7 +74,7 @@ export function SongCard({ title, artist, coverUrl, emotion, language }: SongCar
               alt={title}
               className="w-full h-full object-cover"
             />
-            
+
             {/* Play button overlay */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -71,6 +82,7 @@ export function SongCard({ title, artist, coverUrl, emotion, language }: SongCar
               className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center"
             >
               <motion.button
+                onClick={() => youtubeUrl && setIsOpen(true)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-2xl"
@@ -101,6 +113,7 @@ export function SongCard({ title, artist, coverUrl, emotion, language }: SongCar
             {/* Action buttons */}
             <div className="flex items-center gap-2 pt-2">
               <motion.button
+                onClick={() => youtubeUrl && setIsOpen(true)}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="flex-1 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-full py-2.5 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
@@ -108,7 +121,7 @@ export function SongCard({ title, artist, coverUrl, emotion, language }: SongCar
                 <Play className="w-4 h-4 fill-current" />
                 <span className="text-sm">Play</span>
               </motion.button>
-              
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -116,7 +129,7 @@ export function SongCard({ title, artist, coverUrl, emotion, language }: SongCar
               >
                 <Heart className="w-4 h-4 text-red-400" />
               </motion.button>
-              
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -142,6 +155,53 @@ export function SongCard({ title, artist, coverUrl, emotion, language }: SongCar
         }}
         className={`absolute -inset-2 bg-gradient-to-br ${emotionColors[emotion]} rounded-[32px] blur-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity`}
       />
+
+      {/* YouTube Modal */}
+      {isOpen && youtubeUrl && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl overflow-hidden shadow-2xl max-w-2xl w-full"
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-teal-500 to-cyan-500 p-4 flex items-center justify-between">
+              <div className="flex-1">
+                <h2 className="text-white font-semibold line-clamp-1">{title}</h2>
+                <p className="text-white/80 text-sm line-clamp-1">{artist}</p>
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="ml-4 p-2 hover:bg-white/20 rounded-full transition-all"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+
+            {/* YouTube Iframe */}
+            <div className="aspect-video bg-slate-900">
+              <iframe
+                width="100%"
+                height="100%"
+                src={getYoutubeEmbedUrl(youtubeUrl)}
+                title={title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

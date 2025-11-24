@@ -1,10 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { SongCard } from './SongCard';
 import { Filter } from 'lucide-react';
-
-type Emotion = 'happy' | 'sad' | 'angry' | 'neutral' | 'disgusted' | 'fearful' | 'surprised';
-type Language = 'en' | 'hi' | 'kn';
+import { songsAPI, getErrorMessage, type Emotion, type Language, type Song } from '../api/apiClient';
 
 interface HomePageProps {
   userName: string;
@@ -26,6 +24,10 @@ const translations = {
     fearful: 'Fearful',
     surprised: 'Surprised',
     recommendedForYou: 'Recommended for You',
+    loadingError: 'Failed to load songs. Please check your connection and try again.',
+    noSongs: 'No songs found for this mood. Try a different filter!',
+    loading: 'Loading songs...',
+    retryButton: 'Retry',
   },
   hi: {
     greeting: 'वापसी पर स्वागत है',
@@ -40,6 +42,10 @@ const translations = {
     fearful: 'भयभीत',
     surprised: 'आश्चर्यचकित',
     recommendedForYou: 'आपके लिए अनुशंसित',
+    loadingError: 'गीत लोड करने में विफल। अपने कनेक्शन की जांच करें और फिर से प्रयास करें।',
+    noSongs: 'इस मनोदशा के लिए कोई गीत नहीं मिला। एक अलग फ़िल्टर आजमाएं!',
+    loading: 'गीत लोड किए जा रहे हैं...',
+    retryButton: 'फिर से कोशिश करें',
   },
   kn: {
     greeting: 'ಮರಳಿ ಸ್ವಾಗತ',
@@ -54,6 +60,10 @@ const translations = {
     fearful: 'ಭಯ',
     surprised: 'ಆಶ್ಚರ್ಯ',
     recommendedForYou: 'ನಿಮಗಾಗಿ ಶಿಫಾರಸು',
+    loadingError: 'ಹಾಡುಗಳನ್ನು ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ. ನಿಮ್ಮ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    noSongs: 'ಈ ಮನೋಭಾವಕ್ಕೆ ಯಾವುದೇ ಹಾಡುಗಳು ಕಂಡುಬಂದಿಲ್ಲ. ವಿವಿಧ ಫಿಲ್ಟರ್ ಪ್ರಯತ್ನಿಸಿ!',
+    loading: 'ಹಾಡುಗಳನ್ನು ಲೋಡ್ ಮಾಡುತ್ತಿದೆ...',
+    retryButton: 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
   },
 };
 
@@ -99,7 +109,30 @@ const getMockSongs = (emotion?: Emotion) => {
 
 export function HomePage({ userName, language, currentEmotion }: HomePageProps) {
   const [selectedMood, setSelectedMood] = useState<Emotion | 'all'>('all');
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
   const t = translations[language];
+
+  const fetchSongs = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await songsAPI.getAllSongs(language);
+      setSongs(data);
+    } catch (err) {
+      setError(getErrorMessage(err));
+      setSongs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch songs from backend
+  useEffect(() => {
+    fetchSongs();
+  }, [language]);
 
   const moodFilters: Array<{ key: Emotion | 'all'; label: string; emoji?: string }> = [
     { key: 'all', label: t.allMoods },
@@ -112,10 +145,12 @@ export function HomePage({ userName, language, currentEmotion }: HomePageProps) 
     { key: 'surprised', label: t.surprised, emoji: emotionEmojis.surprised },
   ];
 
-  const songs = getMockSongs(selectedMood === 'all' ? undefined : selectedMood);
+  const filteredSongs = selectedMood === 'all'
+    ? songs
+    : songs.filter(song => song.emotion === selectedMood);
 
   return (
-    <div className="pt-20 md:pt-24 pb-24 md:pb-8 px-4 md:px-6 max-w-7xl mx-auto">
+    <motion.div className="pt-20 md:pt-24 pb-24 md:pb-8 px-4 md:px-6 max-w-7xl mx-auto">
       {/* Welcome header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -168,11 +203,10 @@ export function HomePage({ userName, language, currentEmotion }: HomePageProps) 
                 transition={{ delay: index * 0.05 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all ${
-                  isActive
-                    ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg'
-                    : 'bg-white/40 backdrop-blur-sm text-slate-700 hover:bg-white/60 border border-white/40'
-                }`}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all ${isActive
+                  ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg'
+                  : 'bg-white/40 backdrop-blur-sm text-slate-700 hover:bg-white/60 border border-white/40'
+                  }`}
               >
                 {filter.emoji && <span className="text-lg">{filter.emoji}</span>}
                 <span className="text-sm">{filter.label}</span>
@@ -189,32 +223,72 @@ export function HomePage({ userName, language, currentEmotion }: HomePageProps) 
         transition={{ delay: 0.2 }}
       >
         <h2 className="text-xl text-slate-700 mb-6">{t.recommendedForYou}</h2>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {songs.map((song, index) => (
-            <motion.div
-              key={song.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <SongCard
-                title={song.title}
-                artist={song.artist}
-                coverUrl={`https://images.unsplash.com/photo-${1514525253193 + index}?w=400&h=400&fit=crop`}
-                emotion={song.emotion}
-                language={song.language}
-              />
-            </motion.div>
-          ))}
-        </div>
 
-        {songs.length === 0 && (
-          <div className="text-center py-16 text-slate-500">
-            <p>No songs found for this mood. Try a different filter!</p>
+        {loading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="inline-block mb-4 text-4xl"
+            >
+              🎵
+            </motion.div>
+            <p className="text-slate-600">{t.loading}</p>
+          </motion.div>
+        ) : error ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-red-400/20 to-red-500/20 border border-red-400/50 text-red-700 px-6 py-4 rounded-xl backdrop-blur-sm"
+          >
+            <p className="mb-4">{t.loadingError}</p>
+            <p className="text-sm mb-4 text-red-600">{error}</p>
+            <motion.button
+              onClick={fetchSongs}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all"
+            >
+              {t.retryButton}
+            </motion.button>
+          </motion.div>
+        ) : filteredSongs.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16 text-slate-500"
+          >
+            <p className="text-lg mb-2">🎶</p>
+            <p>{t.noSongs}</p>
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredSongs.map((song, index) => (
+              <motion.div
+                key={`${song.emotion}-${index}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <SongCard
+                  title={song.title}
+                  artist={song.title}
+                  coverUrl={`https://images.unsplash.com/photo-${1514525253193 + index}?w=400&h=400&fit=crop`}
+                  emotion={song.emotion}
+                  language={song.language}
+                  youtubeUrl={song.url}
+                />
+              </motion.div>
+            ))}
           </div>
         )}
       </motion.div>
-    </div>
-  );
+
+    </motion.div>
+  )
 }
+

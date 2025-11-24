@@ -3,7 +3,7 @@ import { Home, Camera, MessageCircle, Users, Music2 } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { MascotCharacter } from './MascotCharacter';
 
-type Page = 'home' | 'emotion' | 'chatbot' | 'friends';
+type Page = 'home' | 'emotion' | 'chatbot';
 type Language = 'en' | 'hi' | 'kn';
 type Emotion = 'happy' | 'sad' | 'angry' | 'neutral' | 'disgusted' | 'fearful' | 'surprised';
 
@@ -20,19 +20,16 @@ const translations = {
     home: 'Home',
     emotion: 'Detect',
     chatbot: 'Chat',
-    friends: 'Friends',
   },
   hi: {
     home: 'होम',
     emotion: 'पता लगाएं',
     chatbot: 'चैट',
-    friends: 'मित्र',
   },
   kn: {
     home: 'ಮನೆ',
     emotion: 'ಪತ್ತೆ',
     chatbot: 'ಚಾಟ್',
-    friends: 'ಸ್ನೇಹಿತರು',
   },
 };
 
@@ -49,7 +46,6 @@ export function Navigation({
     { id: 'home' as Page, label: t.home, icon: Home },
     { id: 'emotion' as Page, label: t.emotion, icon: Camera },
     { id: 'chatbot' as Page, label: t.chatbot, icon: MessageCircle },
-    { id: 'friends' as Page, label: t.friends, icon: Users },
   ];
 
   return (
@@ -83,11 +79,10 @@ export function Navigation({
                       onClick={() => onPageChange(item.id)}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      className={`px-5 py-2.5 rounded-full flex items-center gap-2 transition-all ${
-                        isActive
+                      className={`px-5 py-2.5 rounded-full flex items-center gap-2 transition-all ${isActive
                           ? 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white shadow-lg'
                           : 'bg-white/40 text-slate-700 hover:bg-white/60'
-                      }`}
+                        }`}
                     >
                       <Icon className="w-5 h-5" />
                       <span className="text-sm">{item.label}</span>
@@ -116,11 +111,10 @@ export function Navigation({
                   key={item.id}
                   onClick={() => onPageChange(item.id)}
                   whileTap={{ scale: 0.95 }}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all ${
-                    isActive
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all ${isActive
                       ? 'bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-md'
                       : 'text-slate-600'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="text-xs">{item.label}</span>

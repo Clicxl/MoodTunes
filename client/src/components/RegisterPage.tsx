@@ -3,13 +3,12 @@ import { motion } from 'motion/react';
 import { MascotCharacter } from './MascotCharacter';
 import { LanguageSelector } from './LanguageSelector';
 import { Music2, User, Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
-
-type Language = 'en' | 'hi' | 'kn';
+import { authAPI, getErrorMessage, type Language } from '../api/apiClient';
 
 interface RegisterPageProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
-  onRegister: (name: string, email: string, password: string) => void;
+  onRegister: (email: string, password: string) => void;
   onBackToLogin: () => void;
 }
 
@@ -25,6 +24,9 @@ const translations = {
     backToLogin: 'Back to Login',
     alreadyHaveAccount: 'Already have an account?',
     mascotMessage: "Let's get you started on your musical journey!",
+    passwordMismatch: 'Passwords do not match',
+    allFieldsRequired: 'All fields are required',
+    registrationSuccess: 'Account created successfully!',
   },
   hi: {
     title: 'खाता बनाएं',
@@ -37,6 +39,9 @@ const translations = {
     backToLogin: 'लॉगिन पर वापस जाएं',
     alreadyHaveAccount: 'पहले से खाता है?',
     mascotMessage: 'आइए आपकी संगीत यात्रा शुरू करें!',
+    passwordMismatch: 'पासवर्ड मेल नहीं खाते',
+    allFieldsRequired: 'सभी फील्ड आवश्यक हैं',
+    registrationSuccess: 'खाता सफलतापूर्वक बनाया गया!',
   },
   kn: {
     title: 'ಖಾತೆ ರಚಿಸಿ',
@@ -49,6 +54,9 @@ const translations = {
     backToLogin: 'ಲಾಗಿನ್‌ಗೆ ಹಿಂತಿರುಗಿ',
     alreadyHaveAccount: 'ಈಗಾಗಲೇ ಖಾತೆ ಇದೆಯೇ?',
     mascotMessage: 'ನಿಮ್ಮ ಸಂಗೀತ ಪ್ರಯಾಣವನ್ನು ಪ್ರಾರಂಭಿಸೋಣ!',
+    passwordMismatch: 'ಪಾಸ್‌ವರ್ಡ್ ಹೊಂದಿಕೆ ಆಗುತ್ತಿಲ್ಲ',
+    allFieldsRequired: 'ಎಲ್ಲಾ ಕ್ಷೇತ್ರಗಳು ಅಗತ್ಯವಿದೆ',
+    registrationSuccess: 'ಖಾತೆ ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ!',
   },
 };
 
@@ -59,13 +67,37 @@ export function RegisterPage({ language, onLanguageChange, onRegister, onBackToL
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const t = translations[language];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && email.trim() && password && password === confirmPassword) {
-      onRegister(name, email, password);
+
+    if (!name.trim() || !email.trim() || !password) {
+      setError(t.allFieldsRequired);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError(t.passwordMismatch);
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      const result = await authAPI.register(name, email, password);
+      if (result.success) {
+        onRegister(email, password);
+      } else {
+        setError(result.error || 'Registration failed');
+      }
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,9 +113,8 @@ export function RegisterPage({ language, onLanguageChange, onRegister, onBackToL
             height: Math.random() * 250 + 100,
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
-            background: `linear-gradient(135deg, ${
-              ['rgba(99, 179, 237, 0.2)', 'rgba(129, 140, 248, 0.2)', 'rgba(94, 234, 212, 0.2)'][i % 3]
-            }, transparent)`,
+            background: `linear-gradient(135deg, ${['rgba(99, 179, 237, 0.2)', 'rgba(129, 140, 248, 0.2)', 'rgba(94, 234, 212, 0.2)'][i % 3]
+              }, transparent)`,
           }}
           animate={{
             y: [0, -30, 0],
@@ -152,6 +183,17 @@ export function RegisterPage({ language, onLanguageChange, onRegister, onBackToL
                 </motion.div>
                 <p className="text-slate-600 text-sm">{t.subtitle}</p>
               </div>
+
+              {/* Error message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-100/80 backdrop-blur-sm border border-red-400 text-red-700 px-4 py-3 rounded-full text-sm mb-4"
+                >
+                  {error}
+                </motion.div>
+              )}
 
               {/* Register form */}
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -223,9 +265,10 @@ export function RegisterPage({ language, onLanguageChange, onRegister, onBackToL
 
                 <motion.button
                   type="submit"
+                  disabled={loading}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white rounded-3xl shadow-lg hover:shadow-xl transition-all relative overflow-hidden mt-6"
+                  className="w-full py-4 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white rounded-3xl shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden mt-6"
                 >
                   <motion.div
                     className="absolute inset-0 bg-white/20"
@@ -234,28 +277,42 @@ export function RegisterPage({ language, onLanguageChange, onRegister, onBackToL
                     transition={{ duration: 0.5 }}
                   />
                   <span className="relative z-10 flex items-center justify-center gap-2">
-                    {t.registerButton}
-                    <Music2 className="w-5 h-5" />
+                    {loading ? (
+                      <>
+                        <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity }}>
+                          ⏳
+                        </motion.span>
+                        {t.registerButton}
+                      </>
+                    ) : (
+                      <>
+                        {t.registerButton}
+                        <Music2 className="w-5 h-5" />
+                      </>
+                    )}
                   </span>
-                </motion.button>
-              </form>
+                  <Music2 className="w-5 h-5" />
+              </motion.button>
+            </form>
+          </div>
+            
 
-              {/* Decorative elements */}
-              <div className="flex justify-center gap-4 mt-6 text-lg opacity-40">
-                <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                  🎵
-                </motion.span>
-                <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}>
-                  🎶
-                </motion.span>
-                <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}>
-                  🎵
-                </motion.span>
-              </div>
+            {/* Decorative elements */}
+            <div className="flex justify-center gap-4 mt-6 text-lg opacity-40">
+              <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                🎵
+              </motion.span>
+              <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}>
+                🎶
+              </motion.span>
+              <motion.span animate={{ y: [0, -4, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}>
+                🎵
+              </motion.span>
             </div>
           </div>
-        </motion.div>
+    </motion.div>
       </div>
-    </div>
+      
+      </div >
   );
 }

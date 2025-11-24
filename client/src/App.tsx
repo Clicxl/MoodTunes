@@ -6,9 +6,8 @@ import { RegisterPage } from './components/RegisterPage';
 import { HomePage } from './components/HomePage';
 import { EmotionDetectionPage } from './components/EmotionDetectionPage';
 import { ChatbotPage } from './components/ChatbotPage';
-import { FriendsPage } from './components/FriendsPage';
 
-type Page = 'login' | 'register' | 'home' | 'emotion' | 'chatbot' | 'friends';
+type Page = 'login' | 'register' | 'home' | 'emotion' | 'chatbot';
 type Language = 'en' | 'hi' | 'kn';
 type Emotion = 'happy' | 'sad' | 'angry' | 'neutral' | 'disgusted' | 'fearful' | 'surprised';
 
@@ -29,8 +28,10 @@ export default function App() {
   };
 
   // Handle register
-  const handleRegister = (name: string, email: string, password: string) => {
-    setUserName(name);
+  const handleRegister = (email: string, password: string) => {
+    // Extract name from email or use default
+    const name = email.split('@')[0] || 'User';
+    setUserName(name.charAt(0).toUpperCase() + name.slice(1));
     setIsAuthenticated(true);
     setCurrentPage('home');
   };
@@ -56,7 +57,7 @@ export default function App() {
             onGoToRegister={() => setCurrentPage('register')}
           />
         );
-      
+
       case 'register':
         return (
           <RegisterPage
@@ -66,7 +67,7 @@ export default function App() {
             onBackToLogin={() => setCurrentPage('login')}
           />
         );
-      
+
       case 'home':
         return (
           <HomePage
@@ -75,7 +76,7 @@ export default function App() {
             currentEmotion={currentEmotion}
           />
         );
-      
+
       case 'emotion':
         return (
           <EmotionDetectionPage
@@ -84,7 +85,7 @@ export default function App() {
             onEmotionChange={setCurrentEmotion}
           />
         );
-      
+
       case 'chatbot':
         return (
           <ChatbotPage
@@ -93,14 +94,7 @@ export default function App() {
             userName={userName}
           />
         );
-      
-      case 'friends':
-        return (
-          <FriendsPage
-            language={language}
-          />
-        );
-      
+
       default:
         return null;
     }
@@ -110,18 +104,18 @@ export default function App() {
     <div className="min-h-screen overflow-x-hidden">
       {/* Dynamic background based on current emotion */}
       <EmotionBackground emotion={currentEmotion} />
-      
+
       {/* Navigation - only show when authenticated and not on login/register */}
       {isAuthenticated && currentPage !== 'login' && currentPage !== 'register' && (
         <Navigation
-          currentPage={currentPage as 'home' | 'emotion' | 'chatbot' | 'friends'}
+          currentPage={currentPage as 'home' | 'emotion' | 'chatbot'}
           onPageChange={handlePageChange}
           language={language}
           onLanguageChange={setLanguage}
           currentEmotion={currentEmotion}
         />
       )}
-      
+
       {/* Main content */}
       <main className="relative z-0">
         {renderPage()}

@@ -3,8 +3,7 @@ import { motion } from 'motion/react';
 import { MascotCharacter } from './MascotCharacter';
 import { LanguageSelector } from './LanguageSelector';
 import { Music2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-
-type Language = 'en' | 'hi' | 'kn';
+import { authAPI, getErrorMessage, type Language } from '../api/apiClient';
 
 interface LoginPageProps {
   language: Language;
@@ -53,12 +52,30 @@ export function LoginPage({ language, onLanguageChange, onLogin, onGoToRegister 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const t = translations[language];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim() && password) {
-      onLogin(email, password);
+    if (!email.trim() || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      const result = await authAPI.login(email, password);
+      if (result.success) {
+        onLogin(email, password);
+      } else {
+        setError(result.error || 'Login failed');
+      }
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,9 +91,8 @@ export function LoginPage({ language, onLanguageChange, onLogin, onGoToRegister 
             height: Math.random() * 300 + 100,
             left: `${Math.random() * 100}%`,
             top: `${Math.random() * 100}%`,
-            background: `linear-gradient(135deg, ${
-              ['rgba(99, 179, 237, 0.2)', 'rgba(129, 140, 248, 0.2)', 'rgba(94, 234, 212, 0.2)'][i % 3]
-            }, transparent)`,
+            background: `linear-gradient(135deg, ${['rgba(99, 179, 237, 0.2)', 'rgba(129, 140, 248, 0.2)', 'rgba(94, 234, 212, 0.2)'][i % 3]
+              }, transparent)`,
           }}
           animate={{
             y: [0, -30, 0],
@@ -136,6 +152,17 @@ export function LoginPage({ language, onLanguageChange, onLogin, onGoToRegister 
                 <p className="text-slate-600">{t.subtitle}</p>
               </div>
 
+              {/* Error message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-100/80 backdrop-blur-sm border border-red-400 text-red-700 px-4 py-3 rounded-full text-sm"
+                >
+                  {error}
+                </motion.div>
+              )}
+
               {/* Login form */}
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email input */}
@@ -171,9 +198,10 @@ export function LoginPage({ language, onLanguageChange, onLogin, onGoToRegister 
 
                 <motion.button
                   type="submit"
+                  disabled={loading}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white rounded-3xl shadow-lg hover:shadow-xl transition-all relative overflow-hidden"
+                  className="w-full py-4 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 text-white rounded-3xl shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden"
                 >
                   <motion.div
                     className="absolute inset-0 bg-white/20"
@@ -182,8 +210,19 @@ export function LoginPage({ language, onLanguageChange, onLogin, onGoToRegister 
                     transition={{ duration: 0.5 }}
                   />
                   <span className="relative z-10 flex items-center justify-center gap-2">
-                    {t.loginButton}
-                    <Music2 className="w-5 h-5" />
+                    {loading ? (
+                      <>
+                        <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity }}>
+                          ⏳
+                        </motion.span>
+                        {t.loginButton}
+                      </>
+                    ) : (
+                      <>
+                        {t.loginButton}
+                        <Music2 className="w-5 h-5" />
+                      </>
+                    )}
                   </span>
                 </motion.button>
               </form>
