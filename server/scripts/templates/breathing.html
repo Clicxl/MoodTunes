@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breathing Exercise - MoodTunes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/output.css') }}">
+    <style>
+        @keyframes breathe {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(249, 168, 212, 0.4);
+            }
+            50% {
+                transform: scale(1.3);
+                box-shadow: 0 0 30px 10px rgba(249, 168, 212, 0.6);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(249, 168, 212, 0.4);
+            }
+        }
+        .breathing-container {
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem auto;
+        }
+        .breathing-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            transition: all 0.3s ease-in-out;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, rgba(249, 168, 212, 0.2) 0%, rgba(244, 114, 182, 0.1) 100%);
+        }
+        .breathe-animation {
+            animation: breathe 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        .instruction-text {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex flex-col items-center justify-center p-4 text-white">
+    <div class="max-w-2xl w-full mx-auto text-center">
+        <div class="text-4xl md:text-5xl font-bold text-pink-300 mb-6"> You seem quite {{ emotion  }} </div>
+        <h1 class="text-4xl md:text-5xl font-bold text-pink-300 mb-6">Take a Moment to Breathe</h1>
+        <p class="text-xl text-white/70 mb-12 px-4">Follow the circle's rhythm - breathe in as it grows, out as it shrinks</p>
+        
+        <div class="breathing-container">
+            <div class="breathing-circle border-4 border-pink-300/50 breathe-animation">
+                <span id="breath-text" class="instruction-text"></span>
+            </div>
+        </div>
+
+        <div class="text-3xl font-bold mt-12">
+            Time Remaining: <span id="timer" class="text-pink-300">30</span>s
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = 30;
+        let breathCount = 0;
+        const breathText = document.getElementById('breath-text');
+        const timer = document.getElementById('timer');
+        const circle = document.querySelector('.breathing-circle');
+
+        function updateBreathText() {
+            const phase = (breathCount % 8); // 8 seconds per complete breath cycle
+            if (phase < 4) {
+                breathText.textContent = 'Breathe In';
+                breathText.style.opacity = 1;
+            } else {
+                breathText.textContent = 'Breathe Out';
+                breathText.style.opacity = 1;
+            }
+        }
+
+        // Update breath count every second
+        setInterval(() => {
+            breathCount++;
+            updateBreathText();
+        }, 1000);
+
+        // Initial text update
+        updateBreathText();
+
+        // Timer countdown
+        const timerInterval = setInterval(() => {
+            timeLeft--;
+            timer.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                setTimeout(() => {
+                    window.location.href = '/home';
+                }, 1000);
+            }
+        }, 1000);
+
+        // Add smooth fade transitions for text
+        breathText.style.transition = 'opacity 0.5s ease-in-out';
+    </script>
+</body>
+</html>

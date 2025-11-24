@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Emotion Music Player - Spotify UI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dist/output.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+    integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    /* Custom Tailwind colors fallback */
+    :root {
+      --color-slate-900: oklch(0.1076 0.0126 359.82);
+      --color-pink-300: oklch(0.7674 0.0778 1.35);
+      --color-rose-900: oklch(0.4205 0.1352 9.34);
+      --color-rose-700: oklch(0.5955 0.2068 10.9);
+    }
+  </style>
+</head>
+
+<body class="flex h-screen bg-slate-900 text-white font-bold overflow-hidden">
+
+
+  <!-- Main Content -->
+  <main class="flex-1 p-10 overflow-y-auto">
+
+    <header class="mb-10">
+      <h2 class="text-5xl font-bold mb-2">Welcome {{ username }}</h2>
+      <p class="text-gray-400 text-xl">Here are some songs for you</p>
+    </header>
+
+    <div id="song-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <!-- Song cards will be rendered here by JS -->
+    </div>
+  </main>
+
+  <!-- Language selector (above Emotion Detection) -->
+  <div class="fixed top-4 right-10 bg-pink-300 text-rose-900 font-bold rounded-2xl p-6 shadow-lg tracking-wider flex flex-col items-center gap-3">
+    <label for="language-select" class="sr-only">Select language</label>
+    <select id="language-select" class="bg-white text-rose-500 font-bold py-2 px-3 rounded-lg">
+      <option value="en" default>English (en)</option>
+      <option value="ka">Kannada (ka)</option>
+      <option value="hi">Hindi (hi)</option>
+    </select>
+    <button id="apply-language-btn" 
+      class="bg-pink-300 text-rose-900 font-bold py-2 px-4 rounded-lg hover:bg-pink-400">Apply</button>
+  </div>
+
+  <!-- Emotion Detection Button -->
+  <form action="/emotion_detection" method="get">
+    <button id="emotion-detection-btn"
+      class="fixed bottom-24 right-10 bg-pink-300 text-rose-900 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-pink-400 transition-colors tracking-wider">
+      Emotion Detection
+    </button>
+  </form>
+
+
+  <!-- Chatbot Toggle Button -->
+  <button id="chat-toggle" aria-label="Toggle Chatbot"
+    class="fixed bottom-6 right-8 rounded-full bg-pink-300 w-16 h-16 flex justify-center items-center text-2xl text-rose-900 shadow-xl hover:scale-110 hover:bg-pink-400 transition-transform duration-200">
+    <i class="fa-solid fa-robot"></i>
+  </button>
+
+  <!-- Chatbox -->
+  <div id="chatbox"
+    class="fixed bottom-32 right-8 w-96 max-h-[65vh] bg-pink-300 rounded-2xl flex flex-col shadow-xl overflow-hidden"
+    style="display: none;">
+    <div class="flex items-center bg-rose-700 p-5 rounded-t-2xl text-white gap-4">
+      <i class="fa-solid fa-robot text-4xl"></i>
+      <h2 class="text-2xl font-semibold">AI Chatbot</h2>
+      <button id="chat-close" aria-label="Close Chatbox" class="ml-auto text-3xl hover:text-pink-300">&times;</button>
+    </div>
+    <div id="chat-messages" class="flex-1 p-5 bg-rose-700 overflow-y-auto space-y-4">
+      <style>
+        #chat-messages a {
+          color: rgb(249, 168, 212);
+          /* pink-300 */
+          text-decoration: none;
+        }
+
+        #chat-messages a:hover {
+          text-decoration: underline;
+        }
+      </style>
+    </div>
+    <form id="chat-form" class="flex p-5 gap-3 bg-rose-700 rounded-b-2xl" autocomplete="off">
+      <input id="chat-input" type="text" placeholder="Type your question..."
+        class="flex-grow rounded-xl p-3 bg-rose-700 focus:outline-pink-300 focus:outline-2 outline-none text-white"
+        required />
+      <button type="submit"
+        class="bg-pink-300 text-rose-900 font-bold px-6 rounded-xl hover:bg-pink-400 transition-colors">
+        Send
+      </button>
+    </form>
+  </div>
+
+  <script src="{{ url_for('static', filename='dist/index.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Other Logging Files
+newfile.log
+.env
+
+.prettierignore
+scripts/.prettierrc
+
+.vscode/
+node_modules/
