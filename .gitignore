@@ -1,0 +1,90 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm
+package-lock.json
+yarn.lock
+bun.lock
+
+# Logs
+*.log
+logs/
+newfile.log
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# TypeScript
+*.tsbuildinfo
+dist/
+
+# Python type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# Poetry
+poetry.lock
+
+# UV (uv package manager)
+uv.lock
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build artifacts
+*.whl
+*.tar.gz
+
+# Project-specific
+.python-version
