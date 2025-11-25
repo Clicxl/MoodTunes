@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EmotionBackground } from './components/EmotionBackground';
 import { Navigation } from './components/Navigation';
 import { LoginPage } from './components/LoginPage';
@@ -6,6 +6,7 @@ import { RegisterPage } from './components/RegisterPage';
 import { HomePage } from './components/HomePage';
 import { EmotionDetectionPage } from './components/EmotionDetectionPage';
 import { ChatbotPage } from './components/ChatbotPage';
+import { emotionAPI } from './api/apiClient';
 
 type Page = 'login' | 'register' | 'home' | 'emotion' | 'chatbot';
 type Language = 'en' | 'hi' | 'kn';
@@ -17,6 +18,19 @@ export default function App() {
   const [currentEmotion, setCurrentEmotion] = useState<Emotion>('neutral');
   const [userName, setUserName] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Sync language with backend whenever it changes
+  useEffect(() => {
+    const syncLanguageWithBackend = async () => {
+      try {
+        await emotionAPI.setLanguage(language);
+      } catch (error) {
+        console.error('Failed to sync language with backend:', error);
+      }
+    };
+
+    syncLanguageWithBackend();
+  }, [language]);
 
   // Handle login
   const handleLogin = (email: string, password: string) => {

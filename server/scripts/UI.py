@@ -131,12 +131,22 @@ def current_emotion():
     """Get current emotion and recommended songs"""
     try:
         emotion = shared_data.get("emotion", "neutral") if shared_data else "neutral"
-        lang = request.args.get("lang")
+        lang = request.args.get("lang", "en")
+
+        # Store language in shared_data if not already set
+        if shared_data and not shared_data.get("language"):
+            shared_data["language"] = lang
 
         songs = load_song_to_dict("DB/emotion_songs.sqlite", emotion, language=lang)[:4]
-        return jsonify([emotion, songs]), 200
+
+        # Return emotion, songs, and current language
+        return jsonify(
+            {"emotion": emotion, "songs": songs, "language": lang, "status": "success"}
+        ), 200
     except Exception as e:
-        return jsonify(["error", str(e)]), 500
+        return jsonify(
+            {"error": str(e), "emotion": "neutral", "songs": [], "language": "en"}
+        ), 500
 
 
 # ==================== Chat Endpoint ====================

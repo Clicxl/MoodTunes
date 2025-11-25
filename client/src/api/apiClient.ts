@@ -32,6 +32,7 @@ export interface EmotionResponse {
         desc: string;
         language: Language;
     }>;
+    language?: Language;
 }
 
 export interface ChatResponse {
@@ -148,11 +149,23 @@ export const emotionAPI = {
         const response = await fetch(`${API_BASE}/current_emotion?${params}`, {
             credentials: 'include',
         });
-        const data = await handleResponse<[Emotion, Array<{ name: string; url: string; desc: string; language: Language }>]>(response);
-        return {
-            emotion: data[0],
-            songs: data[1],
-        };
+        const data = await handleResponse<any>(response);
+
+        // Handle both old array format and new object format
+        if (Array.isArray(data)) {
+            // Old format: [emotion, songs]
+            return {
+                emotion: data[0],
+                songs: data[1],
+            };
+        } else {
+            // New format: { emotion, songs, language, status }
+            return {
+                emotion: data.emotion,
+                songs: data.songs,
+                language: data.language as Language,
+            };
+        }
     },
 
     /**

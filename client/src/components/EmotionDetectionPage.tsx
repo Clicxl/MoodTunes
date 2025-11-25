@@ -130,6 +130,7 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
   const [emotionHistory, setEmotionHistory] = useState<Emotion[]>(['neutral', 'happy', 'neutral']);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [recommendedSongs, setRecommendedSongs] = useState<Array<{ name: string; url: string; desc: string; language: string; emotion: Emotion }>>([]);
   const videoRef = useRef<HTMLImageElement>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -138,12 +139,22 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
   // Poll for current emotion from backend
   const pollEmotion = async () => {
     try {
-      const response = await emotionAPI.startDetection();
-      if (response && 'emotion' in response) {
+      const response = await emotionAPI.getCurrentEmotion(language);
+      if (response && response.emotion) {
         const detectedEmotion = response.emotion as Emotion;
         if (detectedEmotion !== currentEmotion) {
           onEmotionChange(detectedEmotion);
           setEmotionHistory(prev => [detectedEmotion, ...prev].slice(0, 5));
+        }
+        // Update recommended songs from backend
+        if (response.songs && response.songs.length > 0) {
+          setRecommendedSongs(response.songs.map((song: any) => ({
+            name: song.name,
+            url: song.url,
+            desc: song.desc,
+            language: song.language,
+            emotion: detectedEmotion
+          })));
         }
       }
     } catch (err) {
@@ -196,7 +207,13 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
     };
   }, []);
 
-  const recommendedSongs = mockSongsByEmotion[currentEmotion];
+  // Refetch songs when language changes
+  useEffect(() => {
+    if (cameraActive) {
+      // If camera is active, trigger an immediate emotion poll with new language
+      pollEmotion();
+    }
+  }, [language]);
 
   return (
     <div className="pt-20 md:pt-24 pb-24 md:pb-8 px-4 md:px-6 max-w-7xl mx-auto">
@@ -337,19 +354,20 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
       >
         <h2 className="text-xl text-slate-700 mb-6">{t.recommendations}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recommendedSongs && recommendedSongs.map((song, index) => (
+          {recommendedSongs && recommendedSongs.length > 0 && recommendedSongs.map((song, index) => (
             <motion.div
-              key={song.id}
+              key={`${song.name}-${index}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 + index * 0.1 }}
             >
               <SongCard
-                title={song.title}
-                artist={song.artist}
-                coverUrl={`https://images.unsplash.com/photo-${1514525253193 + song.id}?w=400&h=400&fit=crop`}
+                title={song.name}
+                artist={song.desc}
+                coverUrl={`https://images.unsplash.com/photo-${1514525253193 + index}?w=400&h=400&fit=crop`}
                 emotion={currentEmotion}
-                language="English"
+                language={song.language}
+                youtubeUrl={song.url}
               />
             </motion.div>
           ))}

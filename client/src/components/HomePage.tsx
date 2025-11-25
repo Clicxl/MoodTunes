@@ -276,7 +276,7 @@ export function HomePage({ userName, language, currentEmotion }: HomePageProps) 
               >
                 <SongCard
                   title={song.title}
-                  artist={song.title}
+                  artist={song.desc}
                   coverUrl={`https://images.unsplash.com/photo-${1514525253193 + index}?w=400&h=400&fit=crop`}
                   emotion={song.emotion}
                   language={song.language}
