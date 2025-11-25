@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { SongCard } from './SongCard';
-import { Camera, CameraOff, Sliders } from 'lucide-react';
+import { Camera, CameraOff, Sliders, AlertCircle } from 'lucide-react';
+import { emotionAPI, getErrorMessage } from '../api/apiClient';
 
 type Emotion = 'happy' | 'sad' | 'angry' | 'neutral' | 'disgusted' | 'fearful' | 'surprised';
 type Language = 'en' | 'hi' | 'kn';
@@ -127,29 +128,73 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
   const [cameraActive, setCameraActive] = useState(false);
   const [moodSlider, setMoodSlider] = useState(50);
   const [emotionHistory, setEmotionHistory] = useState<Emotion[]>(['neutral', 'happy', 'neutral']);
-  
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const videoRef = useRef<HTMLImageElement>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const t = translations[language];
 
-  const handleToggleCamera = () => {
-    setCameraActive(!cameraActive);
-    // In real app, this would start/stop webcam
-    if (!cameraActive) {
-      // Simulate emotion detection
-      simulateEmotionDetection();
+  // Poll for current emotion from backend
+  const pollEmotion = async () => {
+    try {
+      const response = await emotionAPI.startDetection();
+      if (response && 'emotion' in response) {
+        const detectedEmotion = response.emotion as Emotion;
+        if (detectedEmotion !== currentEmotion) {
+          onEmotionChange(detectedEmotion);
+          setEmotionHistory(prev => [detectedEmotion, ...prev].slice(0, 5));
+        }
+      }
+    } catch (err) {
+      console.log('Emotion polling:', getErrorMessage(err));
     }
   };
 
-  const simulateEmotionDetection = () => {
-    // Demo: randomly change emotion every 3 seconds
-    const emotions: Emotion[] = ['happy', 'sad', 'angry', 'neutral', 'disgusted', 'fearful', 'surprised'];
-    const interval = setInterval(() => {
-      const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-      onEmotionChange(randomEmotion);
-      setEmotionHistory(prev => [randomEmotion, ...prev].slice(0, 5));
-    }, 3000);
+  const handleToggleCamera = async () => {
+    if (cameraActive) {
+      // Stop camera
+      setCameraActive(false);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      setError('');
+      if (videoRef.current) {
+        videoRef.current.src = '';
+      }
+    } else {
+      // Start camera
+      try {
+        setIsLoading(true);
+        setError('');
+        setCameraActive(true);
 
-    return () => clearInterval(interval);
+        // Set video feed source
+        if (videoRef.current) {
+          videoRef.current.src = 'http://localhost:5000/video_feed';
+        }
+
+        // Start polling for emotion updates
+        pollIntervalRef.current = setInterval(pollEmotion, 2000);
+
+        setIsLoading(false);
+      } catch (err) {
+        setError(getErrorMessage(err));
+        setCameraActive(false);
+        setIsLoading(false);
+      }
+    }
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, []);
 
   const recommendedSongs = mockSongsByEmotion[currentEmotion];
 
@@ -179,27 +224,26 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
           <div className="bg-white/40 backdrop-blur-xl rounded-[28px] p-6 shadow-lg border border-white/40">
             {/* Camera preview */}
             <div
-              className={`relative aspect-video rounded-3xl overflow-hidden mb-6 border-4 ${emotionBorderColors[currentEmotion]} shadow-2xl ${emotionGlowColors[currentEmotion]} transition-all duration-500`}
+              className={`relative aspect-video rounded-3xl overflow-hidden mb-6 border-4 ${emotionBorderColors[currentEmotion]} shadow-2xl ${emotionGlowColors[currentEmotion]} transition-all duration-500 bg-slate-900`}
             >
-              {cameraActive ? (
-                <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center relative">
-                  {/* Placeholder for webcam feed */}
-                  <div className="text-white/40 text-center">
-                    <Camera className="w-16 h-16 mx-auto mb-4" />
-                    <p>{t.detecting}</p>
+              {error && (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/95 z-50">
+                  <div className="text-center">
+                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+                    <p className="text-red-500 text-sm">{error}</p>
                   </div>
+                </div>
+              )}
 
-                  {/* Scanning animation */}
-                  <motion.div
-                    className="absolute inset-0 border-2 border-teal-400/50"
-                    animate={{
-                      scale: [1, 1.05, 1],
-                      opacity: [0.3, 0.6, 0.3],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                    }}
+              {cameraActive ? (
+                <div className="w-full h-full relative">
+                  {/* Video stream */}
+                  <img
+                    ref={videoRef}
+                    src="http://localhost:5000/video_feed"
+                    alt="Webcam feed"
+                    className="w-full h-full object-cover"
+                    onError={() => setError('Failed to connect to camera feed')}
                   />
 
                   {/* Current emotion badge */}
@@ -223,11 +267,10 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
               onClick={handleToggleCamera}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`w-full py-4 rounded-3xl shadow-lg transition-all flex items-center justify-center gap-3 ${
-                cameraActive
-                  ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
-                  : 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
-              }`}
+              className={`w-full py-4 rounded-3xl shadow-lg transition-all flex items-center justify-center gap-3 ${cameraActive
+                ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                : 'bg-gradient-to-r from-teal-500 to-cyan-500 text-white'
+                }`}
             >
               {cameraActive ? <CameraOff className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
               {cameraActive ? t.stopCamera : t.startCamera}
@@ -248,7 +291,7 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
               <Sliders className="w-5 h-5 text-teal-600" />
               <h3 className="text-slate-700">{t.moodPreference}</h3>
             </div>
-            
+
             <div className="space-y-4">
               <input
                 type="range"
@@ -294,7 +337,7 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
       >
         <h2 className="text-xl text-slate-700 mb-6">{t.recommendations}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recommendedSongs.map((song, index) => (
+          {recommendedSongs && recommendedSongs.map((song, index) => (
             <motion.div
               key={song.id}
               initial={{ opacity: 0, y: 20 }}

@@ -1,4 +1,5 @@
-import json, sqlite3
+import json
+import sqlite3
 
 # Function to read JSON, add a field, and write/update JSON
 def add_language_field_to_json(file_path, language_value):

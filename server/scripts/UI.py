@@ -4,7 +4,7 @@ Optimized for React client communication
 """
 
 from scripts.load_music import load_song_to_dict, load_all_songs
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, Response
 from flask_cors import CORS
 from dotenv import dotenv_values
 from google import genai
@@ -18,6 +18,7 @@ CORS(app, supports_credentials=True)  # Enable CORS for client requests
 
 shared_data = None  # Global reference to shared_data passed from main
 api_key: str = str(dotenv_values(".env").get("GEMINI_API_KEY", ""))
+camera_stream = None  # Global reference to camera object
 
 # Set up Gemini API key
 if api_key:
@@ -30,6 +31,7 @@ def set_shared_data(data):
     """Set the shared data reference for emotion detection"""
     global shared_data
     shared_data = data
+
 
 def check_user(email: str, password: str) -> bool:
     """Check if user exists and password matches"""
@@ -54,6 +56,7 @@ def hash_password(password) -> bytes:
 
 
 # ==================== Authentication Endpoints ====================
+
 
 @app.route("/", methods=["POST"])
 @app.route("/login", methods=["POST"])
@@ -202,6 +205,61 @@ def set_language():
         return jsonify({"status": "success"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# ==================== Video Stream Endpoint ====================
+
+
+@app.route("/video_feed", methods=["GET"])
+def video_feed():
+    """Stream video frames from shared_data (detectionModel process)"""
+
+    def generate_frames():
+        import cv2
+        import time
+
+        while True:
+            if shared_data is None or "frame" not in shared_data:
+                # Return a blank frame if no data available yet
+                blank_frame = cv2.zeros((480, 640, 3), dtype="uint8")
+                cv2.putText(
+                    blank_frame,
+                    "Waiting for camera...",
+                    (100, 240),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (255, 255, 255),
+                    2,
+                )
+                ret, buffer = cv2.imencode(".jpg", blank_frame)
+                frame_bytes = buffer.tobytes()
+            else:
+                # Get frame from detectionModel process via shared_data
+                frame = shared_data.get("frame")
+                if frame is not None:
+                    ret, buffer = cv2.imencode(".jpg", frame)
+                    frame_bytes = buffer.tobytes()
+                else:
+                    # Fallback to blank frame
+                    blank_frame = cv2.zeros((480, 640, 3), dtype="uint8")
+                    ret, buffer = cv2.imencode(".jpg", blank_frame)
+                    frame_bytes = buffer.tobytes()
+
+            yield (
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n"
+                b"Content-Length: "
+                + str(len(frame_bytes)).encode()
+                + b"\r\n\r\n"
+                + frame_bytes
+                + b"\r\n"
+            )
+
+            time.sleep(0.033)  # ~30 FPS
+
+    return Response(
+        generate_frames(), mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
 
 
 # ==================== Health Check ====================
