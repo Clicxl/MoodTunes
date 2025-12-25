@@ -11,6 +11,7 @@ interface EmotionDetectionPageProps {
   language: Language;
   currentEmotion: Emotion;
   onEmotionChange: (emotion: Emotion) => void;
+  onNavigateToBreathing?: () => void;
 }
 
 const translations = {
@@ -124,7 +125,7 @@ const mockSongsByEmotion: Record<Emotion, Array<{ id: number; title: string; art
   ],
 };
 
-export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange }: EmotionDetectionPageProps) {
+export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange, onNavigateToBreathing }: EmotionDetectionPageProps) {
   const [cameraActive, setCameraActive] = useState(false);
   const [moodSlider, setMoodSlider] = useState(50);
   const [emotionHistory, setEmotionHistory] = useState<Emotion[]>(['neutral', 'happy', 'neutral']);
@@ -141,19 +142,29 @@ export function EmotionDetectionPage({ language, currentEmotion, onEmotionChange
     try {
       const response = await emotionAPI.getCurrentEmotion(language);
       if (response && response.emotion) {
-        const detectedEmotion = response.emotion as Emotion;
-        if (detectedEmotion !== currentEmotion) {
-          onEmotionChange(detectedEmotion);
-          setEmotionHistory(prev => [detectedEmotion, ...prev].slice(0, 5));
+        // Normalize emotion to lowercase for comparison
+        const normalizedEmotion = response.emotion.toLowerCase() as Emotion;
+        if (normalizedEmotion !== currentEmotion) {
+          onEmotionChange(normalizedEmotion);
+          setEmotionHistory(prev => [normalizedEmotion, ...prev].slice(0, 5));
+
+          // Show breathing exercise for sad or angry emotions
+          if (normalizedEmotion === 'sad' || normalizedEmotion === 'angry') {
+            console.log(`[EMOTION REDIRECT] Detected ${normalizedEmotion} emotion - navigating to breathing page`);
+            if (onNavigateToBreathing) {
+              onNavigateToBreathing();
+            }
+          }
         }
         // Update recommended songs from backend
         if (response.songs && response.songs.length > 0) {
+          const normalizedEmotion = response.emotion.toLowerCase() as Emotion;
           setRecommendedSongs(response.songs.map((song: any) => ({
             name: song.name,
             url: song.url,
             desc: song.desc,
             language: song.language,
-            emotion: detectedEmotion
+            emotion: normalizedEmotion
           })));
         }
       }

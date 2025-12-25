@@ -6,9 +6,10 @@ import { RegisterPage } from './components/RegisterPage';
 import { HomePage } from './components/HomePage';
 import { EmotionDetectionPage } from './components/EmotionDetectionPage';
 import { ChatbotPage } from './components/ChatbotPage';
+import { BreathingExercisePage } from './components/BreathingExercisePage';
 import { emotionAPI } from './api/apiClient';
 
-type Page = 'login' | 'register' | 'home' | 'emotion' | 'chatbot';
+type Page = 'login' | 'register' | 'home' | 'emotion' | 'chatbot' | 'breathing';
 type Language = 'en' | 'hi' | 'kn';
 type Emotion = 'happy' | 'sad' | 'angry' | 'neutral' | 'disgusted' | 'fearful' | 'surprised';
 
@@ -97,6 +98,16 @@ export default function App() {
             language={language}
             currentEmotion={currentEmotion}
             onEmotionChange={setCurrentEmotion}
+            onNavigateToBreathing={() => handlePageChange('breathing')}
+          />
+        );
+
+      case 'breathing':
+        return (
+          <BreathingExercisePage
+            language={language}
+            emotion={currentEmotion}
+            onClose={() => handlePageChange('home')}
           />
         );
 

@@ -10,6 +10,7 @@ from dotenv import dotenv_values
 from google import genai
 import sqlite3
 import bcrypt
+from numpy import zeros
 from os import urandom
 
 app = Flask(__name__)
@@ -231,7 +232,7 @@ def video_feed():
         while True:
             if shared_data is None or "frame" not in shared_data:
                 # Return a blank frame if no data available yet
-                blank_frame = cv2.zeros((480, 640, 3), dtype="uint8")
+                blank_frame = zeros((480, 640, 3), dtype="uint8")
                 cv2.putText(
                     blank_frame,
                     "Waiting for camera...",
@@ -251,7 +252,7 @@ def video_feed():
                     frame_bytes = buffer.tobytes()
                 else:
                     # Fallback to blank frame
-                    blank_frame = cv2.zeros((480, 640, 3), dtype="uint8")
+                    blank_frame = zeros((480, 640, 3), dtype="uint8")
                     ret, buffer = cv2.imencode(".jpg", blank_frame)
                     frame_bytes = buffer.tobytes()
 
@@ -270,6 +271,129 @@ def video_feed():
     return Response(
         generate_frames(), mimetype="multipart/x-mixed-replace; boundary=frame"
     )
+
+
+# ==================== Breathing Exercise Endpoint ====================
+
+
+@app.route("/breathing_exercise_complete", methods=["POST"])
+def breathing_exercise_complete():
+    """Log when user completes breathing exercise"""
+    try:
+        data = request.get_json()
+        emotion = data.get("emotion", "unknown")
+        duration = data.get("duration", 30)  # Default 30 seconds
+        language = data.get("language", "en")
+
+        # Log the breathing exercise completion
+        import datetime
+
+        log_entry = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "event": "breathing_exercise_complete",
+            "emotion": emotion,
+            "duration_seconds": duration,
+            "language": language,
+        }
+
+        # Store in shared_data for potential analytics
+        if shared_data:
+            if "breathing_stats" not in shared_data:
+                shared_data["breathing_stats"] = []
+            shared_data["breathing_stats"].append(log_entry)
+
+        print(
+            f"[BREATHING] User completed breathing exercise - Emotion: {emotion}, Duration: {duration}s, Language: {language}"
+        )
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Breathing exercise logged for {emotion} emotion",
+            }
+        ), 200
+
+    except Exception as e:
+        print(f"[ERROR] Breathing exercise logging failed: {str(e)}")
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
+@app.route("/breathing_exercise_skipped", methods=["POST"])
+def breathing_exercise_skipped():
+    """Log when user skips breathing exercise"""
+    try:
+        data = request.get_json()
+        emotion = data.get("emotion", "unknown")
+        time_elapsed = data.get("time_elapsed", 0)  # How long they were in the exercise
+        language = data.get("language", "en")
+
+        import datetime
+
+        log_entry = {
+            "timestamp": datetime.datetime.now().isoformat(),
+            "event": "breathing_exercise_skipped",
+            "emotion": emotion,
+            "time_elapsed_seconds": time_elapsed,
+            "language": language,
+        }
+
+        if shared_data:
+            if "breathing_stats" not in shared_data:
+                shared_data["breathing_stats"] = []
+            shared_data["breathing_stats"].append(log_entry)
+
+        print(
+            f"[BREATHING] User skipped breathing exercise - Emotion: {emotion}, Elapsed: {time_elapsed}s, Language: {language}"
+        )
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": f"Breathing exercise skip logged for {emotion} emotion",
+            }
+        ), 200
+
+    except Exception as e:
+        print(f"[ERROR] Breathing exercise skip logging failed: {str(e)}")
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
+@app.route("/breathing_stats", methods=["GET"])
+def breathing_stats():
+    """Get breathing exercise statistics"""
+    try:
+        if shared_data and "breathing_stats" in shared_data:
+            stats = shared_data["breathing_stats"]
+
+            # Calculate summary
+            completed = sum(
+                1 for s in stats if s.get("event") == "breathing_exercise_complete"
+            )
+            skipped = sum(
+                1 for s in stats if s.get("event") == "breathing_exercise_skipped"
+            )
+
+            return jsonify(
+                {
+                    "status": "success",
+                    "total_exercises": len(stats),
+                    "completed": completed,
+                    "skipped": skipped,
+                    "stats": stats,
+                }
+            ), 200
+        else:
+            return jsonify(
+                {
+                    "status": "success",
+                    "total_exercises": 0,
+                    "completed": 0,
+                    "skipped": 0,
+                    "stats": [],
+                }
+            ), 200
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
 
 
 # ==================== Health Check ====================

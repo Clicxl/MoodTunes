@@ -209,6 +209,60 @@ export const chatAPI = {
     },
 };
 
+// ==================== Breathing Exercise ====================
+
+export const breathingAPI = {
+    /**
+     * Log breathing exercise completion
+     */
+    async logCompletion(emotion: Emotion, duration: number = 30, language: Language = 'en'): Promise<{ status: string; message: string }> {
+        const response = await fetch(`${API_BASE}/breathing_exercise_complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                emotion,
+                duration,
+                language,
+            }),
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    },
+
+    /**
+     * Log breathing exercise skip
+     */
+    async logSkipped(emotion: Emotion, timeElapsed: number = 0, language: Language = 'en'): Promise<{ status: string; message: string }> {
+        const response = await fetch(`${API_BASE}/breathing_exercise_skipped`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                emotion,
+                time_elapsed: timeElapsed,
+                language,
+            }),
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    },
+
+    /**
+     * Get breathing exercise statistics
+     */
+    async getStats(): Promise<{
+        status: string;
+        total_exercises: number;
+        completed: number;
+        skipped: number;
+        stats: Array<any>;
+    }> {
+        const response = await fetch(`${API_BASE}/breathing_stats`, {
+            credentials: 'include',
+        });
+        return handleResponse(response);
+    },
+};
+
 // ==================== Error Handling Utility ====================
 
 export function getErrorMessage(error: unknown): string {
